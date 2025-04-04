@@ -1,5 +1,4 @@
 import { View, Text } from 'react-native';
-import { Link, Stack } from 'expo-router';
 
 import { LinkButton } from '@/components/LinkButton';
 import { notFoundScreen } from '@/constants/strings';
