@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction, createAsyncThunk, createSelector, nanoid } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, nanoid } from "@reduxjs/toolkit";
 import type { RootState, AppThunk } from "@/redux/store"
 
 export type IdType = string; // May change
@@ -9,7 +9,7 @@ export interface MediaFile {
   name: string;
   type: 'audio' | 'video';
 }
-  
+
 export interface Album {
   id: IdType;
   title: string;
@@ -29,50 +29,59 @@ const albumSlice = createSlice({
   name: 'albums',
   initialState,
   reducers: {
-    createAlbum: {
-      reducer(state, action: PayloadAction<Album>) {
-        state.albums.push(action.payload);
-      },
-      prepare(title: string) {
-        return {
-          payload: {
-            id: nanoid(),
-            title,
-            files: [],
-            createdAt: Date.now(),
-          } as Album,
-        };
-      },
+    createAlbum: (state, action: PayloadAction<string>) => {
+      const newAlbum: Album = {
+        id: nanoid(),
+        title: action.payload,
+        files: [],
+        createdAt: Date.now()
+      };
+      state.albums = [...state.albums, newAlbum];
     },
-    deleteAlbum(state, action: PayloadAction<string>) {
+    deleteAlbum: (state, action: PayloadAction<IdType>) => {
       state.albums = state.albums.filter(album => album.id !== action.payload);
-      if (state.selectedAlbumId === action.payload) {
-        state.selectedAlbumId = null;
-      }
     },
-    renameAlbum(state, action: PayloadAction<{ albumId: string; newTitle: string }>) {
-      const album = state.albums.find(a => a.id === action.payload.albumId);
-      if (album) {
-        album.title = action.payload.newTitle;
-      }
+    renameAlbum: (state, action: PayloadAction<{ albumId: IdType; newTitle: string }>) => {
+      state.albums = state.albums.map(
+        (album) => {
+          if (action.payload.albumId === album.id) {
+            return {
+              ...album,
+              title: action.payload.newTitle,
+            };
+          }
+          return album;
+        }
+      );
     },
-    addFileToAlbum(state, action: PayloadAction<{ albumId: string; file: MediaFile }>) {
-      const album = state.albums.find(a => a.id === action.payload.albumId);
-      if (album && !album.files.find(f => f.id === action.payload.file.id)) {
-        album.files.push(action.payload.file);
-      }
+    addFileToAlbum: (state, action: PayloadAction<{ albumId: IdType; file: MediaFile }>) => {
+      state.albums = state.albums.map(
+        (album) => {
+          if (album.id === action.payload.albumId) {
+            return {
+              ...album,
+              files: [
+                ...album.files,
+                action.payload.file
+              ],
+            };
+          }
+          return album;
+        }
+      );
     },
-    removeFileFromAlbum(state, action: PayloadAction<{ albumId: string; fileId: string }>) {
-      const album = state.albums.find(a => a.id === action.payload.albumId);
-      if (album) {
-        album.files = album.files.filter(f => f.id !== action.payload.fileId);
-      }
-    },
-    selectAlbum(state, action: PayloadAction<string>) {
-      state.selectedAlbumId = action.payload;
-    },
-    clearSelectedAlbum(state) {
-      state.selectedAlbumId = null;
+    removeFileFromAlbum: (state, action: PayloadAction<{ albumId: IdType; fileId: IdType }>) => {
+      state.albums = state.albums.map(
+        (album) => {
+          if (album.id === action.payload.albumId) {
+            return {
+              ...album,
+              files: album.files.filter(file => file.id !== action.payload.fileId)
+            };
+          }
+          return album;
+        }
+      );
     },
   },
 });
@@ -83,8 +92,20 @@ export const {
   renameAlbum,
   addFileToAlbum,
   removeFileFromAlbum,
-  selectAlbum,
-  clearSelectedAlbum,
 } = albumSlice.actions;
 
 export default albumSlice.reducer;
+
+
+export const getMediaFile = (
+  state: RootState,
+  albumId: IdType, 
+  fileId: IdType
+) => {
+  return state
+    .library
+    .albums
+    .find(album => album.id === albumId)
+    ?.files
+    .find(file => file.id === fileId);
+};

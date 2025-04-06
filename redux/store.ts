@@ -1,11 +1,13 @@
 import type { Action, ThunkAction } from '@reduxjs/toolkit'
 import { configureStore } from '@reduxjs/toolkit'
 
-import quizReducer from '@/redux/quizSlice'
+import albumReducer from '@/redux/librarySlice'
+import playerReducer from '@/redux/playerSlice'
 
 export const store = configureStore({
   reducer: {
-    quiz: quizReducer
+    library: albumReducer,
+    player: playerReducer,
   }
 })
 
