@@ -1,4 +1,5 @@
 import { View, Text } from 'react-native';
+import { libraryScreen } from '@/constants/strings';
 
 type Props = {
   id: string;
@@ -9,9 +10,9 @@ export function AlbumCard({
   id,
   name,
 }: Props) {
-
+  
   return (
-    <View className='flex-1 items-center justify-center'>
+    <View className='min-h-fit w-full items-center justify-center p-2'>
       <Text className='text-white'>{name} {id}</Text>
     </View>
   );
@@ -27,16 +28,16 @@ export function Seperator() {
 
 export function AlbumHeader() {
   return (
-    <View className='flex-1 items-center justify-center'>
-      <Text className='text-white text-xl font-bold opacity-85'>ALBUMS</Text>
+    <View className='min-h-fit w-full items-center justify-center p-2'>
+      <Text className='text-white text-xl font-bold opacity-85'>{libraryScreen.albumHeader}</Text>
     </View>
   );
 }
 
 export function NoAlbumFound() {
   return (
-    <View>
-
+    <View className=''>
+      <Text className=''>{libraryScreen.noAlbumFound}</Text>
     </View>
   );
 }

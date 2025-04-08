@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState, AppThunk } from "@/redux/store"
 
 import { IdType } from "./librarySlice";
 
@@ -25,7 +24,9 @@ const playerSlice = createSlice({
   name: 'albums',
   initialState,
   reducers: {
-    
+    playTrack: (state, action: PayloadAction<Track>) => {
+      
+    },
   },
 });
 

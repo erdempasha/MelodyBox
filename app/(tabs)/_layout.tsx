@@ -11,8 +11,10 @@ export default function TabLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
+          elevation: 0,
+          shadowOpacity: 0,
           backgroundColor: '#ffffff',
-          borderTopWidth: 0
+          borderTopWidth: 0,
         },
       }}
     >

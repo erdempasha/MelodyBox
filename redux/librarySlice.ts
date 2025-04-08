@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction, nanoid } from "@reduxjs/toolkit";
-import type { RootState, AppThunk } from "@/redux/store"
 
 export type IdType = string; // May change
 
@@ -17,7 +16,7 @@ export interface Album {
   createdAt: number;
 }
 
-interface LibraryState {
+export interface LibraryState {
   albums: Album[];
 }
 
@@ -83,6 +82,9 @@ const albumSlice = createSlice({
         }
       );
     },
+    loadStateForTesting: (state, action: PayloadAction<LibraryState>) => {
+      return action.payload;
+    },
   },
 });
 
@@ -92,20 +94,7 @@ export const {
   renameAlbum,
   addFileToAlbum,
   removeFileFromAlbum,
+  loadStateForTesting,
 } = albumSlice.actions;
 
 export default albumSlice.reducer;
-
-
-export const getMediaFile = (
-  state: RootState,
-  albumId: IdType, 
-  fileId: IdType
-) => {
-  return state
-    .library
-    .albums
-    .find(album => album.id === albumId)
-    ?.files
-    .find(file => file.id === fileId);
-};
