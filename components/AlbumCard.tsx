@@ -1,6 +1,8 @@
 import { View, Text } from 'react-native';
 import { libraryScreen } from '@/constants/strings';
 
+import { LinkButton } from './LinkButton';
+
 type Props = {
   id: string;
   name: string;
@@ -12,16 +14,24 @@ export function AlbumCard({
 }: Props) {
   
   return (
-    <View className='min-h-fit w-full items-center justify-center p-2'>
+    <LinkButton
+      className='min-h-fit w-full items-center justify-center p-2'
+      href={{
+        pathname: "/album/[album]",
+        params: {
+          album: id,
+        }
+      }}
+    >
       <Text className='text-white'>{name} {id}</Text>
-    </View>
+    </LinkButton>
   );
 }
 
 export function Seperator() {
   return (
     <View className='flex-row justify-center items-center'>
-      <View className='flex-1 h-1 rounded-md bg-white opacity-70' />
+      <View className='flex-1 h-1 rounded bg-white' />
     </View>
   );
 }

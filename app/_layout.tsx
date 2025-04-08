@@ -8,8 +8,13 @@ export default function RootLayout() {
     <Provider store={store}>
       <Stack screenOptions={{headerShown: false}}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="album/[album]"
+          options={{
+            presentation: "modal",
+          }}
+        />
         <Stack.Screen name="+not-found" />
-        <Stack.Screen name="album" />
       </Stack>
     </Provider>
   );

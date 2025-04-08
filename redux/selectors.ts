@@ -14,4 +14,16 @@ export const getMediaFile = (
     .find(file => file.id === fileId);
 };
 
-export const getAlbums = (state: RootState) => state.library.albums
+export const getAlbums = (
+  state: RootState
+) => state.library.albums;
+
+export const getMediaFiles = (
+  state: RootState
+) => {
+  return state
+    .library
+    .albums
+    .find(album => album.id)
+    ?.files;
+}
