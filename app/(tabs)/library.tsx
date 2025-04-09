@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { View, FlatList } from "react-native";
 import "@/global.css";
 
@@ -6,9 +5,6 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   getAlbums,
 } from "@/redux/selectors";
-import {
-  loadStateForTesting
-} from "@/redux/librarySlice"
 
 import {
   AlbumCard,
@@ -17,15 +13,9 @@ import {
   AlbumHeader
 } from "@/components/AlbumCard";
 
-import { fakeLibraryData } from "@/constants/testData";
 
 export default function Library() {
-  const dispatch = useAppDispatch();
   const albums = useAppSelector(getAlbums);
-
-  useEffect(() => {
-    dispatch(loadStateForTesting(fakeLibraryData));
-  },[]);
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
