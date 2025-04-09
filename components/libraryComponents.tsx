@@ -3,6 +3,8 @@ import { libraryScreen } from '@/constants/strings';
 
 import { LinkButton } from './LinkButton';
 
+import "@/global.css";
+
 type Props = {
   id: string;
   name: string;

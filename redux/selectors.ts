@@ -19,11 +19,12 @@ export const getAlbums = (
 ) => state.library.albums;
 
 export const getMediaFiles = (
-  state: RootState
+  state: RootState,
+  albumId: IdType,
 ) => {
   return state
     .library
     .albums
-    .find(album => album.id)
+    .find(album => album.id === albumId)
     ?.files;
 }

@@ -3,6 +3,8 @@ import { View, Text } from 'react-native';
 import { LinkButton } from '@/components/LinkButton';
 import { notFoundScreen } from '@/constants/strings';
 
+import "@/global.css";
+
 export default function NotFoundScreen() {
   return (
     <View className='flex-1 justify-center items-center gap-8'>

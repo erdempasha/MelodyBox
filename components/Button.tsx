@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Pressable, PressableProps } from 'react-native';
 
+import "@/global.css";
+
 type Props = {
   className?: string;
   children: React.ReactNode;

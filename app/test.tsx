@@ -11,7 +11,10 @@ import "@/global.css";
 
 export default function Test() {
   const dispatch = useAppDispatch();
-  const loadFakeData = () => {dispatch(loadStateForTesting(fakeLibraryData))};
+  const loadFakeData = () => {
+    dispatch(loadStateForTesting(fakeLibraryData));
+    console.log("Data Loaded");
+  };
   const purgeData = () => {
     persistor.purge().then(
       () => {console.log("Data Purged")}
@@ -21,10 +24,10 @@ export default function Test() {
   return (
     <View className=" flex-1 justify-center items-center gap-5 bg-white">
       <Button onPress={loadFakeData}>
-        <Text className="className='text-gray-200 font-bold text-2xl px-7 py-3">Load Fake Data</Text>
+        <Text className="text-gray-200 font-bold text-2xl px-7 py-3">Load Fake Data</Text>
       </Button>
-      <Button>
-        <Text className="className='text-gray-200 font-bold text-2xl px-7 py-3">Purge Data</Text>
+      <Button onPress={purgeData}>
+        <Text className="text-gray-200 font-bold text-2xl px-7 py-3">Purge Data</Text>
       </Button>
     </View>
   );

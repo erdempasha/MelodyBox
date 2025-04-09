@@ -2,6 +2,8 @@ import React from 'react';
 import { View } from 'react-native';
 import { Link, Href } from 'expo-router'
 
+import "@/global.css";
+
 type Props = {
   href: Href;
   className?: string;
