@@ -7,7 +7,7 @@ import "@/global.css";
 
 export default function NotFoundScreen() {
   return (
-    <View className='flex-1 justify-center items-center gap-8'>
+    <View className='flex-1 bg-white justify-center items-center gap-8'>
       <Text className='text-gray-800 text-2xl font-bold'>
         { notFoundScreen.message }
       </Text>

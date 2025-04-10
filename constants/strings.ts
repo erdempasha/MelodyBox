@@ -14,3 +14,8 @@ export const libraryScreen = {
     noAlbumFound: "You can create an album by clicking plus button.",
     albumHeader: "albums",
 };
+
+export const albumModal = {
+    albumNotFound: "Album couldn't found.",
+    goBack: "Go Back",
+}

@@ -15,7 +15,7 @@ export function FileCard({
   
   return (
     <View className='min-h-fit w-full items-center justify-center p-2'>
-      <Text className='text-white'>{name} {id}</Text>
+      <Text className='text-black'>{name} {id}</Text>
     </View>
   );
 }
@@ -23,15 +23,19 @@ export function FileCard({
 export function Seperator() {
   return (
     <View className='flex-row justify-center items-center'>
-      <View className='flex-1 h-1 rounded bg-white' />
+      <View className='flex-1 h-1 rounded bg-gray-900' />
     </View>
   );
 }
 
-export function Header() {
+type HeaderProps = {
+  albumName: string
+}
+
+export function Header({ albumName }: HeaderProps) {
   return (
     <View className='min-h-fit w-full items-center justify-center p-2'>
-      <Text className='text-white text-xl font-bold opacity-85'>{libraryScreen.albumHeader}</Text>
+      <Text className='text-white text-xl font-bold opacity-85'>{albumName}</Text>
     </View>
   );
 }

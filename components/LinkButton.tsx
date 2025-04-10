@@ -18,7 +18,7 @@ export function LinkButton({
 
   return (
     <Link href={href}>
-      <View className={ className ?? 'flex-1 justify-center items-center bg-slate-800 rounded-2xl' }>
+      <View className={ className ?? 'flex-wrap justify-center items-center bg-slate-800 rounded-2xl' }>
         { children }
       </View>
     </Link>

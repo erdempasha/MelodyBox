@@ -24,10 +24,10 @@ export default function Test() {
   return (
     <View className=" flex-1 justify-center items-center gap-5 bg-white">
       <Button onPress={loadFakeData}>
-        <Text className="text-gray-200 font-bold text-2xl px-7 py-3">Load Fake Data</Text>
+        <Text className="text-gray-200 font-bold px-7 py-3">Load Fake Data</Text>
       </Button>
       <Button onPress={purgeData}>
-        <Text className="text-gray-200 font-bold text-2xl px-7 py-3">Purge Data</Text>
+        <Text className="text-gray-200 font-bold px-7 py-3">Purge Data</Text>
       </Button>
     </View>
   );
