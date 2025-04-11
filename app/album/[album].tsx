@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   getAlbumById,
 } from "@/redux/selectors";
-import { addFileToAlbum, MediaTypes } from '@/redux/librarySlice';
+import { addFileToAlbum, IdType, MediaTypes, removeFileFromAlbum, renameFile } from '@/redux/librarySlice';
 
 import {
   FileCard,
@@ -23,6 +23,7 @@ import { LinkButton } from '@/components/LinkButton';
 import { Button } from "@/components/Button"
 import { albumModal } from "@/constants/strings";
 
+type ContextActions = "rename" | "delete" | "notchosen";
 
 export default function AlbumModal() {
   const { album: albumId } = useLocalSearchParams<{ album: string }>();
@@ -30,6 +31,11 @@ export default function AlbumModal() {
   const album = useAppSelector(state => getAlbumById(state, albumId))
   const [ dialogVisible, setDialogVisible ] = useState(false);
   const [ dialogError, setDialogError ] = useState(false);
+
+  const [ contextDialogVisible, setContextDialogVisible ] = useState(false);
+  const [ contextDialogError, setContextDialogError ] = useState(false);
+  const [ contextDialogState, setContextDialogState ] = useState<ContextActions>("notchosen");
+  const [ chosenFile, setChosenFile ] = useState<IdType | undefined>(undefined);
 
   const [ pickedFileUri, setPickedFileUri ] = useState<string>("");
   const [ pickedMediaType, setPickedMediaType ] = useState<MediaTypes>("audio");
@@ -77,39 +83,118 @@ export default function AlbumModal() {
   const { id, title, files, createdAt } = album;
 
   const handleSaveDialog = () => {
-    if (fileName === "") {
+    if (fileName.trim() === "") {
       setDialogError(true);
       return;
     }
 
     dispatch(addFileToAlbum({
       albumId: id,
-      name: fileName,
+      name: fileName.trim(),
       uri: pickedFileUri,
       type: pickedMediaType,
     }));
     handleCancelDialog();
   };
 
+  const handleCancelContextDialog = () => {
+    setChosenFile(undefined);
+    setContextDialogError(false);
+    setContextDialogState("notchosen");
+    setContextDialogVisible(false);
+    setFileName("");
+  };
+
+  const handleRenameAlbum = () => {
+    if (fileName.trim() === "") {
+      setContextDialogError(true);
+      return;
+    }
+
+    if (chosenFile !== undefined) {
+      dispatch(renameFile({
+        albumId: id,
+        fileId: chosenFile,
+        name: fileName.trim(),
+      }));
+    }
+
+    handleCancelContextDialog();
+  };
+
+  const handleDeleteAlbum = () => {
+    if (chosenFile !== undefined) {
+      dispatch(removeFileFromAlbum({
+        albumId: id,
+        fileId: chosenFile
+      }));
+    }
+
+    handleCancelContextDialog();
+  };
+
+  const contextDialogContent: Record<ContextActions, () => React.ReactNode> = {
+    rename: () => (
+      <>
+        <Dialog.Title title={albumModal.renameFile} />
+        <Input
+          placeholder={albumModal.inputPlaceholder}
+          errorMessage={contextDialogError ? albumModal.inputError : undefined}
+          onChangeText={setFileName}
+        />
+        <Dialog.Actions>
+          <Dialog.Button title={albumModal.cancel} onPress={handleCancelContextDialog} />
+          <Dialog.Button title={albumModal.rename} onPress={handleRenameAlbum} />
+        </Dialog.Actions>
+      </>
+    ),
+    delete: () => (
+      <>
+        <Dialog.Title title={albumModal.deleteFile} />
+        <Text>{albumModal.areYouSure}</Text>
+        <Dialog.Actions>
+          <Dialog.Button title={albumModal.cancel} onPress={handleCancelContextDialog} />
+          <Dialog.Button title={albumModal.delete} onPress={handleDeleteAlbum} />
+        </Dialog.Actions>
+      </>
+    ),
+    notchosen: () => (
+      <>
+        <Dialog.Title title={albumModal.contextTitle} />
+        <Dialog.Actions>
+          <Dialog.Button title={albumModal.cancel} onPress={handleCancelContextDialog} />
+          <Dialog.Button title={albumModal.delete} onPress={() => setContextDialogState("delete")} />
+          <Dialog.Button title={albumModal.rename} onPress={() => setContextDialogState("rename")} />
+        </Dialog.Actions>
+      </>
+    ),
+  };
+
+  const contextInvoke = (fileId: IdType) => {
+    setChosenFile(fileId);
+    setContextDialogVisible(true);
+  };
+
   return (
     <View className='flex-1 justify-center items-center p-2'>
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-blue-500 shadow-gray-400 shadow-2xl p-5">
-        <Button
-          className='w-10 h-10 absolute right-5 top-5 justify-center items-center bg-slate-800 rounded-full'
-          onPress={handleAddFile}
-        >
-          <FontAwesome name="plus" size={20} color="white" />
-        </Button>
         <FlatList
+          className='w-full'
           data={files}
           renderItem={
-            ({ item: file }) => (FileCard({ id: file.id, name: file.name }))
+            ({ item: file }) => (FileCard({ id: file.id, name: file.name, contextCallback: () => contextInvoke(file.id) }))
           }
           ItemSeparatorComponent={Seperator}
           ListEmptyComponent={NoFileFound}
           ListHeaderComponent={() => Header({ albumName: title })}
           keyExtractor={file => file.id}
         />
+        <Button
+          className='ml-auto w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+          onPress={handleAddFile}
+        >
+          <FontAwesome name="plus" size={20} color="white" />
+        </Button>
       </View>
 
       <Dialog
@@ -128,6 +213,13 @@ export default function AlbumModal() {
           <Dialog.Button title={albumModal.save} onPress={handleSaveDialog}/>
           <Dialog.Button title={albumModal.cancel} onPress={handleCancelDialog}/>
         </Dialog.Actions>
+      </Dialog>
+
+      <Dialog
+        isVisible={contextDialogVisible}
+        onBackdropPress={handleCancelContextDialog}
+      >
+        {contextDialogContent[contextDialogState]()}
       </Dialog>
     </View>
   );

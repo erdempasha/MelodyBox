@@ -91,6 +91,29 @@ const albumSlice = createSlice({
         }
       );
     },
+    renameFile: (state, action: PayloadAction<{ albumId: IdType, fileId: IdType, name: string }>) => {
+      state.albums = state.albums.map(
+        album => {
+          if (album.id === action.payload.albumId) {
+            return {
+              ...album,
+              files: album.files.map(
+                file => {
+                  if (file.id !== action.payload.fileId){
+                    return file;
+                  }
+                  return {
+                    ...file,
+                    name: action.payload.name,
+                  };
+                }
+              )
+            };
+          }
+          return album;
+        }
+      );      
+    },
     loadStateForTesting: (state, action: PayloadAction<LibraryState>) => {
       return action.payload;
     },
@@ -103,6 +126,7 @@ export const {
   renameAlbum,
   addFileToAlbum,
   removeFileFromAlbum,
+  renameFile,
   loadStateForTesting,
 } = albumSlice.actions;
 

@@ -1,21 +1,35 @@
 import { View, Text } from 'react-native';
-import { libraryScreen } from '@/constants/strings';
+import { FontAwesome } from '@expo/vector-icons';
+
+import { albumModal } from '@/constants/strings';
+
+import { Button } from './Button';
 
 import "@/global.css";
 
 type Props = {
   id: string;
   name: string;
+  contextCallback?: () => void
 };
 
 export function FileCard({
   id,
   name,
+  contextCallback
 }: Props) {
   
   return (
-    <View className='min-h-fit w-full items-center justify-center p-2'>
-      <Text className='text-black'>{name} {id}</Text>
+    <View
+      className='flex-row items-center justify-center'
+    >
+      <Text className='text-gray-900'>{name}</Text>
+      <Button
+        className='bg-transparent h-fit w-fit ml-auto items-center justify-center'
+        onPress={contextCallback}
+      >
+        <FontAwesome className='p-2' name="ellipsis-v" size={15} color="#111827" />
+      </Button>
     </View>
   );
 }
@@ -34,7 +48,7 @@ type HeaderProps = {
 
 export function Header({ albumName }: HeaderProps) {
   return (
-    <View className='min-h-fit w-full items-center justify-center p-2'>
+    <View className='min-h-fit w-full items-center justify-center'>
       <Text className='text-white text-xl font-bold opacity-85'>{albumName}</Text>
     </View>
   );
@@ -42,8 +56,8 @@ export function Header({ albumName }: HeaderProps) {
 
 export function NoFileFound() {
   return (
-    <View className=''>
-      <Text className=''>{libraryScreen.noAlbumFound}</Text>
+    <View className='h-full w-full items-center justify-center'>
+      <Text className=''>{albumModal.noFileFound}</Text>
     </View>
   );
 }

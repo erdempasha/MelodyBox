@@ -1,6 +1,9 @@
 import { View, Text } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+
 import { libraryScreen } from '@/constants/strings';
 
+import { Button } from './Button';
 import { LinkButton } from './LinkButton';
 
 import "@/global.css";
@@ -8,25 +11,37 @@ import "@/global.css";
 type Props = {
   id: string;
   name: string;
+  contextCallback?: () => void
 };
 
 export function AlbumCard({
   id,
   name,
+  contextCallback
 }: Props) {
   
   return (
-    <LinkButton
-      className='min-h-fit w-full items-center justify-center p-2'
-      href={{
-        pathname: "/album/[album]",
-        params: {
-          album: id,
-        }
-      }}
+    <View
+      className='flex-row items-center justify-center'
     >
-      <Text className='text-white'>{name} {id}</Text>
-    </LinkButton>
+      <LinkButton
+        className='bg-transparent h-fit w-auto items-center justify-center p-2'
+        href={{
+          pathname: "/album/[album]",
+          params: {
+            album: id,
+          }
+        }}
+      >
+        <Text className='text-white'>{name}</Text>
+      </LinkButton>
+      <Button
+        className='bg-transparent h-fit w-fit ml-auto items-center justify-center'
+        onPress={contextCallback}
+      >
+        <FontAwesome className='p-2' name="ellipsis-v" size={15} color="white" />
+      </Button>
+    </View>
   );
 }
 
@@ -40,7 +55,7 @@ export function Seperator() {
 
 export function AlbumHeader() {
   return (
-    <View className='min-h-fit w-full items-center justify-center p-2'>
+    <View className='h-fit w-full items-center justify-center'>
       <Text className='text-white text-xl font-bold opacity-85'>{libraryScreen.albumHeader}</Text>
     </View>
   );
@@ -48,8 +63,8 @@ export function AlbumHeader() {
 
 export function NoAlbumFound() {
   return (
-    <View className=''>
-      <Text className=''>{libraryScreen.noAlbumFound}</Text>
+    <View className='h-full w-full items-center justify-center'>
+      <Text className='text-white'>{libraryScreen.noAlbumFound}</Text>
     </View>
   );
 }
