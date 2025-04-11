@@ -13,6 +13,11 @@ export const tabsTitles = {
 export const libraryScreen = {
     noAlbumFound: "You can create an album by clicking plus button.",
     albumHeader: "albums",
+    dialogTitle: "Name Your Media",
+    inputPlaceholder: "Enter a file name",
+    inputError: "Please enter a valid name",
+    save: "Save",
+    cancel: "Cancel",
 };
 
 export const albumModal = {

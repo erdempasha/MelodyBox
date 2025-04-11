@@ -11,7 +11,7 @@ export default function Index() {
     <View className=" flex-1 justify-center items-center bg-white">
       <View className="h-4/6 w-4/6 justify-center items-center rounded-3xl bg-green-600">
         <LinkButton href="/test">
-          <Text>Admin Page</Text>
+          <Text className="text-white p-3 font-bold">Admin Page</Text>
         </LinkButton>
       </View>
     </View>
