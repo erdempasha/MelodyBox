@@ -18,4 +18,9 @@ export const libraryScreen = {
 export const albumModal = {
     albumNotFound: "Album couldn't found.",
     goBack: "Go Back",
+    dialogTitle: "Name Your Media",
+    inputPlaceholder: "Enter a file name",
+    inputError: "Please enter a valid name",
+    save: "Save",
+    cancel: "Cancel",
 }

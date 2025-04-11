@@ -1,5 +1,4 @@
 import { View, FlatList } from "react-native";
-import "@/global.css";
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {

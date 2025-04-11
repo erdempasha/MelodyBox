@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Pressable, PressableProps } from 'react-native';
+import { Pressable, PressableProps } from 'react-native';
 
 import "@/global.css";
 
@@ -17,10 +17,8 @@ export function Button({
 }: ButtonProps) {
 
   return (
-    <Pressable {...pressableProps}>
-      <View className={ className ?? 'flex-wrap justify-center items-center bg-slate-800 rounded-2xl' }>
-        { children }
-      </View>
+    <Pressable className={ className ?? 'flex-wrap justify-center items-center bg-slate-800 rounded-2xl' } {...pressableProps}>
+      { children }
     </Pressable>
   );
 }

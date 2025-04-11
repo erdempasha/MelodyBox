@@ -23,7 +23,7 @@ export default function TabLayout() {
         options={{
           title: tabsTitles.homeTab,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'musical-notes' : 'musical-notes-outline'} color={color} size={24} />
           ),
         }}
       />
@@ -32,7 +32,7 @@ export default function TabLayout() {
         options={{
           title: tabsTitles.libraryTab,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24}/>
+            <Ionicons name={focused ? 'albums' : 'albums-outline'} color={color} size={24}/>
           ),
         }}
       />

@@ -2,11 +2,13 @@ import { createSlice, PayloadAction, nanoid } from "@reduxjs/toolkit";
 
 export type IdType = string; // May change
 
+export type MediaTypes = 'audio' | 'video';
+
 export interface MediaFile {
   id: IdType;
   uri: string;
   name: string;
-  type: 'audio' | 'video';
+  type: MediaTypes;
 }
 
 export interface Album {
@@ -53,7 +55,14 @@ const albumSlice = createSlice({
         }
       );
     },
-    addFileToAlbum: (state, action: PayloadAction<{ albumId: IdType; file: MediaFile }>) => {
+    addFileToAlbum: (state, action: PayloadAction<{ albumId: IdType, name: string, uri: string, type: MediaTypes }>) => {
+      const newFile: MediaFile = {
+        id: nanoid(),
+        uri: action.payload.uri,
+        name: action.payload.name,
+        type: action.payload.type,
+      }
+
       state.albums = state.albums.map(
         (album) => {
           if (album.id === action.payload.albumId) {
@@ -61,8 +70,8 @@ const albumSlice = createSlice({
               ...album,
               files: [
                 ...album.files,
-                action.payload.file
-              ],
+                newFile
+              ]
             };
           }
           return album;
