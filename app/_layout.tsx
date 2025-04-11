@@ -4,7 +4,14 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import { store, persistor } from '@/redux/store';
 
+import { LogBox } from "react-native";
+
+LogBox.ignoreLogs([
+  "Dialog.Button"
+]);
+
 export default function RootLayout() {
+
   return(
     <Provider store={store}>
       <PersistGate

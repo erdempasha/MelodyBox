@@ -11,7 +11,7 @@ export const tabsTitles = {
 };
 
 export const libraryScreen = {
-    noAlbumFound: "You can create an album by clicking the plus button.",
+    noAlbumFound: "You can create an album by clicking on the plus button.",
     albumHeader: "albums",
     dialogTitle: "Name Your Media",
     inputPlaceholder: "Enter an album name",
@@ -28,7 +28,7 @@ export const libraryScreen = {
 
 export const albumModal = {
     albumNotFound: "Album couldn't found.",
-    noFileFound: "You can import a file by clicking the plus button.",
+    noFileFound: "You can import a file by clicking on the plus button.",
     goBack: "Go Back",
     dialogTitle: "Name Your Media",
     inputPlaceholder: "Enter a file name",
