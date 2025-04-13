@@ -27,7 +27,7 @@ const initialState: LibraryState = {
 };
 
 const albumSlice = createSlice({
-  name: 'albums',
+  name: 'library',
   initialState,
   reducers: {
     createAlbum: (state, action: PayloadAction<string>) => {
