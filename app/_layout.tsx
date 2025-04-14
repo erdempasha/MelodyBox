@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { Provider } from 'react-redux';
 import { PersistGate } from "redux-persist/integration/react";
+import { Audio } from 'expo-av';
 
 import { store, persistor } from '@/redux/store';
 
@@ -11,6 +13,24 @@ LogBox.ignoreLogs([
 ]);
 
 export default function RootLayout() {
+
+  useEffect(() => {
+    const configureAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+        console.log('Audio mode configured successfully.');
+      } catch (e) {
+        console.error('Failed to set audio mode', e);
+      }
+    };
+    configureAudio();
+  }, []);
 
   return(
     <Provider store={store}>
