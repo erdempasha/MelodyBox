@@ -1,4 +1,4 @@
-import { LibraryState } from "@/redux/librarySlice"
+import { Album, LibraryState } from "@/redux/librarySlice"
 
 export const fakeLibraryData: LibraryState = {
   albums: [
@@ -78,5 +78,29 @@ export const fakeLibraryData: LibraryState = {
         },
       ],
     },
+  ],
+};
+
+export const sampleLibraryState: { albums: Album[] } = {
+  albums: [
+    {
+      id: 'album-1',
+      title: 'Demo Audios',
+      files: [
+        { id: 'f1', name: 'Sample Audio 1', uri: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', type: 'audio' as const },
+        { id: 'f2', name: 'Sample Audio 2', uri: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', type: 'audio' as const },
+        { id: 'f3', name: 'Sample Audio 3', uri: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', type: 'audio' as const },
+      ],
+      createdAt: Date.now() - 100000,
+    },
+    {
+        id: 'album-2',
+        title: 'Demo Videos',
+        files: [
+          { id: 'f4', name: 'Big Buck Bunny', uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', type: 'video' as const },
+          { id: 'f5', name: 'Elephants Dream', uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', type: 'video' as const },
+        ],
+        createdAt: Date.now(),
+      },
   ],
 };

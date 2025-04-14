@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { AVPlaybackStatus, Audio, Video } from 'expo-av';
+import { AVPlaybackStatus, Audio } from 'expo-av';
 import { AppDispatch, RootState } from './store';
-import { IdType, MediaFile } from "./librarySlice";
+import { IdType, MediaFile, MediaTypes } from "./librarySlice";
 
 export interface Track {
   albumId: IdType;
@@ -50,7 +50,7 @@ const initialState: PlayerState = {
   shuffle: false,
 };
 
-let soundObject: Audio.Sound | Video | null = null;
+let soundObject: Audio.Sound | null = null;
 let currentOnStatusUpdate: ((status: AVPlaybackStatus) => void) | null = null;
 
 const playerService = {
@@ -60,18 +60,21 @@ const playerService = {
     onStatusUpdate: (status: AVPlaybackStatus) => void
   ): Promise<void> => {
     await playerService.unload();
-    console.log(`PlayerService: Loading ${track.mediaFile.name}`);
-    const isAudio = track.mediaFile.type === 'audio';
+    console.log(`PlayerService: Loading AUDIO ${track.mediaFile.name}`);
+    if (track.mediaFile.type !== 'audio') {
+        console.warn("PlayerService.load called with non-audio track. Ignoring.");
+        return;
+    }
     const source = { uri: track.mediaFile.uri };
-    const newSoundObject = isAudio ? new Audio.Sound() : new Video({});
+    const newSoundObject = new Audio.Sound();
     currentOnStatusUpdate = onStatusUpdate;
     newSoundObject.setOnPlaybackStatusUpdate(currentOnStatusUpdate);
     try {
       await newSoundObject.loadAsync(source, initialStatus);
       soundObject = newSoundObject;
-      console.log(`PlayerService: Loaded ${track.mediaFile.name}`);
+      console.log(`PlayerService: Loaded AUDIO ${track.mediaFile.name}`);
     } catch (error) {
-      console.error("PlayerService: Error loading track", error);
+      console.error("PlayerService: Error loading audio track", error);
       soundObject = null;
       newSoundObject.setOnPlaybackStatusUpdate(null);
       currentOnStatusUpdate = null;
@@ -80,7 +83,7 @@ const playerService = {
   },
   unload: async (): Promise<void> => {
     if (soundObject) {
-      console.log("PlayerService: Unloading current sound object.");
+      console.log("PlayerService: Unloading current audio sound object.");
       const oldSoundObject = soundObject;
       const oldCallback = currentOnStatusUpdate;
       soundObject = null;
@@ -91,7 +94,7 @@ const playerService = {
          }
         await oldSoundObject.unloadAsync();
       } catch (error) {
-        console.error("PlayerService: Error unloading", error);
+        console.error("PlayerService: Error unloading audio", error);
       }
     }
   },
@@ -103,7 +106,7 @@ const playerService = {
         await soundObject.playAsync();
       }
     } catch (error) {
-      console.error("PlayerService: Error playing", error);
+      console.error("PlayerService: Error playing audio", error);
     }
   },
   pause: async (): Promise<void> => {
@@ -114,7 +117,7 @@ const playerService = {
         await soundObject.pauseAsync();
       }
     } catch (error) {
-      console.error("PlayerService: Error pausing", error);
+      console.error("PlayerService: Error pausing audio", error);
     }
   },
   seek: async (positionMillis: number): Promise<void> => {
@@ -125,7 +128,7 @@ const playerService = {
         await soundObject.setPositionAsync(positionMillis, { toleranceMillisBefore: 100, toleranceMillisAfter: 100 });
       }
     } catch (error) {
-      console.error("PlayerService: Error seeking", error);
+      console.error("PlayerService: Error seeking audio", error);
     }
   },
   replay: async (): Promise<void> => {
@@ -136,7 +139,7 @@ const playerService = {
         await soundObject.replayAsync({ shouldPlay: true });
       }
     } catch (error) {
-      console.error("PlayerService: Error replaying", error);
+      console.error("PlayerService: Error replaying audio", error);
     }
   },
 };
@@ -156,10 +159,10 @@ export const handleTrackFinishAsync = createAsyncThunk<
 >(
   'player/handleTrackFinishAsync',
   async (_, { dispatch, getState }) => {
-    const { repeatMode } = getState().player;
-    if (repeatMode === 'one') {
+    const { repeatMode, currentTrack } = getState().player;
+    if (repeatMode === 'one' && currentTrack?.mediaFile.type === 'audio') {
       dispatch(replayAsync());
-    } else {
+    } else if (repeatMode !== 'one') {
        dispatch(nextTrackAsync());
     }
   }
@@ -169,19 +172,55 @@ export const setTrackAsync = createAsyncThunk<
   void, { track: Track; albumTracks: Track[] }, { dispatch: AppDispatch; state: RootState }
 >(
   'player/setTrackAsync',
-  async ({ track, albumTracks }, { dispatch }) => {
+  async ({ track, albumTracks }, { dispatch, getState }) => {
+    await playerService.unload();
     dispatch(playerSlice.actions._setTrackInternal({ track, albumTracks }));
-    const onStatusUpdate = (status: AVPlaybackStatus) => {
-       dispatch(playerSlice.actions._updatePlaybackStatusInternal(status));
-       if (status.isLoaded && status.didJustFinish) {
-           dispatch(handleTrackFinishAsync());
-       }
-    };
-    try {
-      await playerService.load(track, { shouldPlay: true }, onStatusUpdate);
-    } catch (error: any) {
-      dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to load track' }));
-      dispatch(stopPlaybackAsync());
+
+    if (track.mediaFile.type === 'audio') {
+        const onStatusUpdate = (status: AVPlaybackStatus) => {
+           dispatch(playerSlice.actions._updatePlaybackStatusInternal(status));
+           if (status.isLoaded && status.didJustFinish) {
+               dispatch(handleTrackFinishAsync());
+           }
+        };
+        try {
+          await playerService.load(track, { shouldPlay: true }, onStatusUpdate);
+        } catch (error: any) {
+          dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to load track' }));
+          dispatch(stopPlaybackAsync());
+        }
+    } else {
+        dispatch(playerSlice.actions._syncStatusForVideoLoad());
+        console.log("Set track for VIDEO. UI component should handle loading.");
+    }
+  }
+);
+
+export const reloadPersistedTrackAsync = createAsyncThunk<
+  void, void, { dispatch: AppDispatch; state: RootState }
+>(
+  'player/reloadPersistedTrackAsync',
+  async (_, { dispatch, getState }) => {
+    const { currentTrack, playbackStatus } = getState().player;
+    if (!currentTrack || playbackStatus.isLoaded) {
+      return;
+    }
+
+    if (currentTrack.mediaFile.type === 'audio') {
+        console.log('Attempting to reload persisted AUDIO track:', currentTrack.mediaFile.name);
+        const onStatusUpdate = (status: AVPlaybackStatus) => {
+           dispatch(playerSlice.actions._updatePlaybackStatusInternal(status));
+        };
+        try {
+          await playerService.load(currentTrack, { shouldPlay: false }, onStatusUpdate);
+          dispatch(playerSlice.actions._syncStatusAfterPersistedLoad());
+        } catch (error: any) {
+          console.error('Failed to reload persisted audio track:', error);
+          dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to reload track' }));
+        }
+    } else {
+         console.log('Persisted track is VIDEO. Ensuring state is ready for component load.');
+         dispatch(playerSlice.actions._syncStatusAfterPersistedLoad());
     }
   }
 );
@@ -191,8 +230,8 @@ export const playPauseAsync = createAsyncThunk<
 >(
   'player/playPauseAsync',
   async (_, { getState }) => {
-    const { isPlaying, isLoaded } = getState().player.playbackStatus;
-    if (!isLoaded) return;
+    const { playbackStatus: { isPlaying, isLoaded }, currentTrack } = getState().player;
+    if (!isLoaded || !currentTrack || currentTrack.mediaFile.type !== 'audio') return;
     if (isPlaying) {
       await playerService.pause();
     } else {
@@ -206,9 +245,9 @@ export const seekAsync = createAsyncThunk<
 >(
   'player/seekAsync',
   async ({ positionMillis }, { getState }) => {
-    const { isLoaded } = getState().player.playbackStatus;
-    if (!isLoaded) return;
-    await playerService.seek(positionMillis);
+     const { playbackStatus: { isLoaded }, currentTrack } = getState().player;
+     if (!isLoaded || !currentTrack || currentTrack.mediaFile.type !== 'audio') return;
+     await playerService.seek(positionMillis);
   }
 );
 
@@ -217,8 +256,8 @@ export const replayAsync = createAsyncThunk<
 >(
   'player/replayAsync',
   async (_, { getState }) => {
-    const { isLoaded } = getState().player.playbackStatus;
-    if (!isLoaded) return;
+    const { playbackStatus: { isLoaded }, currentTrack } = getState().player;
+    if (!isLoaded || !currentTrack || currentTrack.mediaFile.type !== 'audio') return;
     await playerService.replay();
   }
 );
@@ -234,7 +273,6 @@ export const nextTrackAsync = createAsyncThunk<
 
     let chosenTrack: Track | undefined = undefined;
     let sourceQueueType: 'next' | 'queue' | 'album' = 'next';
-    let sourceQueue: Track[] = [];
 
     if (state.shuffle) {
         const availableQueues: { type: 'next' | 'queue' | 'album'; queue: Track[] }[] = [];
@@ -245,7 +283,7 @@ export const nextTrackAsync = createAsyncThunk<
         if (availableQueues.length > 0) {
             const target = availableQueues[0];
             sourceQueueType = target.type;
-            sourceQueue = target.queue;
+            const sourceQueue = target.queue;
             const randomIndex = Math.floor(Math.random() * sourceQueue.length);
             chosenTrack = sourceQueue[randomIndex];
         }
@@ -268,18 +306,7 @@ export const nextTrackAsync = createAsyncThunk<
             chosenTrack: chosenTrack,
             sourceQueueType: sourceQueueType,
         }));
-        const onStatusUpdate = (status: AVPlaybackStatus) => {
-            dispatch(playerSlice.actions._updatePlaybackStatusInternal(status));
-            if (status.isLoaded && status.didJustFinish) {
-                dispatch(handleTrackFinishAsync());
-            }
-        };
-        try {
-            await playerService.load(chosenTrack, { shouldPlay: true }, onStatusUpdate);
-        } catch (error: any) {
-            dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to load next track' }));
-            dispatch(stopPlaybackAsync());
-        }
+        dispatch(setTrackAsync({ track: chosenTrack, albumTracks: [] }));
     } else {
         dispatch(stopPlaybackAsync());
     }
@@ -298,59 +325,18 @@ export const previousTrackAsync = createAsyncThunk<
 
     if (!currentTrack || !state.playbackStatus.isLoaded) return;
 
-    if (positionMillis > seekThreshold) {
+    if (positionMillis > seekThreshold && currentTrack.mediaFile.type === 'audio') {
       await playerService.seek(0);
+    } else if (positionMillis > seekThreshold && currentTrack.mediaFile.type === 'video') {
+       console.warn("Seek within video track via previous action not implemented via service. UI should handle.");
     } else if (state.prev.length > 0) {
       const previousTrack = state.prev[0];
       dispatch(playerSlice.actions._setPreviousTrackInternal({ currentTrackToShiftToNext: currentTrack }));
-      const onStatusUpdate = (status: AVPlaybackStatus) => {
-            dispatch(playerSlice.actions._updatePlaybackStatusInternal(status));
-            if (status.isLoaded && status.didJustFinish) {
-                dispatch(handleTrackFinishAsync());
-            }
-       };
-      try {
-        await playerService.load(previousTrack, { shouldPlay: true }, onStatusUpdate);
-      } catch (error: any) {
-        dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to load previous track' }));
-        dispatch(stopPlaybackAsync());
-      }
-    } else {
+      dispatch(setTrackAsync({ track: previousTrack, albumTracks: [] }));
+    } else if (currentTrack.mediaFile.type === 'audio') {
       await playerService.seek(0);
-    }
-  }
-);
-
-//!
-export const reloadPersistedTrackAsync = createAsyncThunk<
-  void, void, { dispatch: AppDispatch; state: RootState }
->(
-  'player/reloadPersistedTrackAsync',
-  async (_, { dispatch, getState }) => {
-    const { currentTrack, playbackStatus } = getState().player;
-
-    // Only proceed if a track was persisted but is not currently loaded
-    if (!currentTrack || playbackStatus.isLoaded) {
-      return;
-    }
-    console.log('Attempting to reload persisted track:', currentTrack.mediaFile.name);
-
-    const onStatusUpdate = (status: AVPlaybackStatus) => {
-       dispatch(playerSlice.actions._updatePlaybackStatusInternal(status));
-       // NOTE: We don't trigger handleTrackFinishAsync from here
-       // because this is just a load, not natural playback finishing.
-    };
-
-    try {
-      // Load the track but ensure it doesn't auto-play
-      await playerService.load(currentTrack, { shouldPlay: false }, onStatusUpdate);
-      // Ensure the state reflects that it's loaded but not playing
-      dispatch(playerSlice.actions._syncStatusAfterPersistedLoad());
-    } catch (error: any) {
-      console.error('Failed to reload persisted track:', error);
-      dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to reload track' }));
-      // Optionally stop/clear state if reload fails critically
-      // dispatch(stopPlaybackAsync());
+    } else {
+       console.warn("Seek to 0 for video track via previous action not implemented via service. UI should handle.");
     }
   }
 );
@@ -361,11 +347,18 @@ const playerSlice = createSlice({
   reducers: {
     _setTrackInternal: (state, action: PayloadAction<{ track: Track; albumTracks: Track[] }>) => {
       state.currentTrack = action.payload.track;
-      state.albumQueue = action.payload.albumTracks.filter(t => t.mediaFile.id !== action.payload.track.mediaFile.id);
-      state.queue = [];
-      state.prev = [];
-      state.next = [];
-      state.playbackStatus = { ...initialState.playbackStatus, isLoaded: false };
+      if (action.payload.albumTracks.length > 0) {
+          state.albumQueue = action.payload.albumTracks.filter(t => t.mediaFile.id !== action.payload.track.mediaFile.id);
+          state.queue = [];
+          state.prev = [];
+          state.next = [];
+      }
+      state.playbackStatus = {
+          ...initialState.playbackStatus,
+          isLoaded: false,
+          error: undefined,
+          didJustFinish: false,
+      };
     },
     _setNextTrackInternal: (state, action: PayloadAction<{ previousTrack: Track, chosenTrack: Track, sourceQueueType: 'next' | 'queue' | 'album'}>) => {
         const { previousTrack, chosenTrack, sourceQueueType } = action.payload;
@@ -379,13 +372,23 @@ const playerSlice = createSlice({
         } else if (sourceQueueType === 'album') {
              state.albumQueue = state.albumQueue.filter(t => t.mediaFile.id !== trackIdToRemove);
         }
-        state.playbackStatus = { ...initialState.playbackStatus, isLoaded: false };
+        state.playbackStatus = {
+            ...initialState.playbackStatus,
+            isLoaded: false,
+            error: undefined,
+            didJustFinish: false,
+        };
     },
     _setPreviousTrackInternal: (state, action: PayloadAction<{currentTrackToShiftToNext: Track}>) => {
         if (state.prev.length > 0) {
            state.next.unshift(action.payload.currentTrackToShiftToNext);
            state.currentTrack = state.prev.shift();
-           state.playbackStatus = { ...initialState.playbackStatus, isLoaded: false };
+           state.playbackStatus = {
+               ...initialState.playbackStatus,
+               isLoaded: false,
+               error: undefined,
+               didJustFinish: false,
+            };
         }
     },
     _handleEndOfQueues: (state) => {
@@ -428,11 +431,20 @@ const playerSlice = createSlice({
       }
     },
     _syncStatusAfterPersistedLoad: (state) => {
-      if (state.playbackStatus.isLoaded) {
-         state.playbackStatus.isPlaying = false;
-         state.playbackStatus.didJustFinish = false;
+      if (state.currentTrack) {
+          state.playbackStatus.isPlaying = false;
+          state.playbackStatus.didJustFinish = false;
       }
     },
+    _syncStatusForVideoLoad: (state) => {
+        state.playbackStatus = {
+            ...initialState.playbackStatus,
+            isLoaded: false,
+            isPlaying: true,
+            error: undefined,
+            didJustFinish: false,
+        };
+    }
   },
 });
 
@@ -441,6 +453,7 @@ export const {
   clearQueue,
   setRepeatMode,
   toggleShuffle,
+  _updatePlaybackStatusInternal,
 } = playerSlice.actions;
 
 export default playerSlice.reducer;
