@@ -27,7 +27,6 @@ import {
   handleTrackFinishAsync,
   _updatePlaybackStatusInternal,
   seekAsync,
-  sanitizePlaybackStatus,
 } from '@/redux/playerSlice';
 import {
   getAlbums,
@@ -116,7 +115,7 @@ export default function Player() {
   };
 
   const handleVideoStatusUpdate = (status: AVPlaybackStatus) => {
-      dispatch(_updatePlaybackStatusInternal(sanitizePlaybackStatus(status)));
+      dispatch(_updatePlaybackStatusInternal(status));
       if (status.isLoaded && status.didJustFinish) {
           console.log("Video finished playing.");
           dispatch(handleTrackFinishAsync());
@@ -135,10 +134,10 @@ export default function Player() {
 
   const handleVideoError = (error: string) => {
     console.error("Video Error:", error);
-    dispatch(_updatePlaybackStatusInternal(sanitizePlaybackStatus({
+    dispatch(_updatePlaybackStatusInternal({
       isLoaded: false,
       error: error
-    })));
+    }));
   };
 
   return (
