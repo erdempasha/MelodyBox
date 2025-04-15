@@ -11,7 +11,18 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   getAlbumById,
 } from "@/redux/selectors";
-import { addFileToAlbum, IdType, MediaFile, MediaTypes, removeFileFromAlbum, renameFile } from '@/redux/librarySlice';
+import {
+  addFileToAlbum,
+  IdType,
+  MediaFile,
+  MediaTypes,
+  removeFileFromAlbum,
+  renameFile
+} from '@/redux/librarySlice';
+import {
+  setTrackAsync,
+  addToQueue,
+} from '@/redux/playerSlice';
 
 import {
   FileCard,
@@ -22,7 +33,6 @@ import {
 import { LinkButton } from '@/components/LinkButton';
 import { Button } from "@/components/Button"
 import { albumModal } from "@/constants/strings";
-import { setTrackAsync } from '@/redux/playerSlice';
 
 type ContextActions = "rename" | "delete" | "notchosen";
 
@@ -134,6 +144,19 @@ export default function AlbumModal() {
     handleCancelContextDialog();
   };
 
+  const handleQueue = () => {
+    const file = album.files.find(f => f.id === chosenFile);
+
+    if (file !== undefined) {
+      dispatch(addToQueue({
+        albumId: id,
+        mediaFile: file,
+      }));
+    }
+    
+    handleCancelContextDialog();
+  };
+
   const contextDialogContent: Record<ContextActions, () => React.ReactNode> = {
     rename: () => (
       <>
@@ -166,6 +189,7 @@ export default function AlbumModal() {
           <Dialog.Button title={albumModal.cancel} onPress={handleCancelContextDialog} />
           <Dialog.Button title={albumModal.delete} onPress={() => setContextDialogState("delete")} />
           <Dialog.Button title={albumModal.rename} onPress={() => setContextDialogState("rename")} />
+          <Dialog.Button title={albumModal.queue}  onPress={handleQueue} />
         </Dialog.Actions>
       </>
     ),

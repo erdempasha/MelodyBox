@@ -10,6 +10,10 @@ export const tabsTitles = {
     libraryTab: "Library",
 };
 
+export const playerScreen = {
+    message: "Why don't you play something?"
+};
+
 export const libraryScreen = {
     noAlbumFound: "You can create an album by clicking on the plus button.",
     albumHeader: "albums",
@@ -36,7 +40,8 @@ export const albumModal = {
     save: "Save",
     cancel: "Cancel",
     delete: "Delete",
-    rename: "Rename", 
+    rename: "Rename",
+    queue: "Queue",
     renameFile: "Rename File",
     deleteFile: "Delete File",
     contextTitle: "Actions",

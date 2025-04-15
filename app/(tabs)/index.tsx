@@ -14,16 +14,13 @@ import {
   MediaFile
 } from '@/redux/librarySlice';
 import {
-  Track,
   RepeatMode,
-  setTrackAsync,
   playPauseAsync,
   nextTrackAsync,
   previousTrackAsync,
   toggleShuffle,
   setRepeatMode,
   reloadPersistedTrackAsync,
-  stopPlaybackAsync,
   handleTrackFinishAsync,
   _updatePlaybackStatusInternal,
   seekAsync,
@@ -32,6 +29,8 @@ import {
   getAlbums,
   selectPlayerState
 } from '@/redux/selectors';
+
+import { playerScreen } from '@/constants/strings';
 
 import "@/global.css";
 
@@ -51,6 +50,15 @@ export default function Player() {
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
 
+  const [ actionFlag, setActionFlag ] = useState(true);
+
+  useEffect(() => {
+    if (currentTrack) {
+      console.log("Attempting initial reload check...");
+      dispatch(reloadPersistedTrackAsync());
+    }
+  }, [dispatch]);
+
   useEffect(() => {
     if (!isSeeking) {
       setSeekValue(playbackStatus.positionMillis);
@@ -58,10 +66,13 @@ export default function Player() {
   }, [playbackStatus.positionMillis, isSeeking]);
 
   const handlePlayPause = async () => {
+    if (!actionFlag) return;
+    setActionFlag(false);
+
     if (!currentTrack) return;
 
     if (currentTrack.mediaFile.type === 'audio') {
-      dispatch(playPauseAsync());
+      await dispatch(playPauseAsync());
     } else if (currentTrack.mediaFile.type === 'video') {
     
       if (!videoRef.current) return;
@@ -79,47 +90,78 @@ export default function Player() {
           console.error("Error handling video play/pause:", error);
       }
     }
+
+    setActionFlag(true);
   };
 
-  const handleNext = () => {
-    dispatch(nextTrackAsync());
+  const handleNext = async () => {
+    if (!actionFlag) return;
+    setActionFlag(false);
+
+    await dispatch(nextTrackAsync());
+
+    setActionFlag(true);
   };
 
-  const handlePrevious = () => {
-    dispatch(previousTrackAsync());
+  const handlePrevious = async () => {
+    if (!actionFlag) return;
+    setActionFlag(false);
+
+    await dispatch(previousTrackAsync());
+    
+    setActionFlag(true);
   };
 
   const handleSeek = async (positionMillis: number) => {
+    if (!actionFlag) return;
+    setActionFlag(false);
+
     if (!currentTrack || !playbackStatus.isLoaded) return;
 
     const clampedPosition = Math.max(0, Math.min(positionMillis, playbackStatus.durationMillis ?? positionMillis));
     console.log(`Seeking to: ${clampedPosition}`);
     
     if (currentTrack.mediaFile.type === 'audio') {
-        dispatch(seekAsync({ positionMillis: clampedPosition }));
+        await dispatch(seekAsync({ positionMillis: clampedPosition }));
     } else if (currentTrack.mediaFile.type === 'video') {
         await videoRef.current?.setPositionAsync(clampedPosition, { toleranceMillisBefore: 100, toleranceMillisAfter: 100 });
     }
+
+    setActionFlag(true);
   };
 
   const handleToggleShuffle = () => {
+    if (!actionFlag) return;
+    setActionFlag(false);
+
     dispatch(toggleShuffle());
+
+    setActionFlag(true);
   };
 
   const handleToggleRepeat = () => {
+    if (!actionFlag) return;
+    setActionFlag(false);
+
     const nextMode: RepeatMode = repeatMode === 'none' ? 'one' : 'none';
     dispatch(setRepeatMode(nextMode));
     if (currentTrack?.mediaFile.type === 'video') {
         videoRef.current?.setIsLoopingAsync(nextMode === 'one');
     }
+
+    setActionFlag(true);
   };
 
   const handleVideoStatusUpdate = (status: AVPlaybackStatus) => {
-      dispatch(_updatePlaybackStatusInternal(status));
-      if (status.isLoaded && status.didJustFinish) {
-          console.log("Video finished playing.");
-          dispatch(handleTrackFinishAsync());
-      }
+    const { isLoaded } = status;
+    if (isLoaded === null || isLoaded === undefined) {
+      return;
+    }
+    dispatch(_updatePlaybackStatusInternal(status));
+    if (status.isLoaded && status.didJustFinish) {
+        console.log("Video finished playing.");
+        dispatch(handleTrackFinishAsync());
+    }
   };
 
   const formatTime = (millis: number | undefined | null): string => {
@@ -144,10 +186,11 @@ export default function Player() {
     <View className="flex-1 justify-center items-center bg-white">
       <View className="h-5/6 w-5/6 justify-between items-center rounded-3xl bg-green-600 p-4">
         <View className="flex-1 w-full justify-center items-center bg-green-800 mb-4 overflow-hidden rounded-xl">
-          {currentTrack?.mediaFile.type === 'video' && (
+          {
+            currentTrack?.mediaFile.type === 'video' ?
             <Video
               ref={videoRef}
-              className='flex-1 w-full bg-black'
+              style={{flex: 1, backgroundColor: "black", width: '100%', height: "auto"}}
               source={{ uri: currentTrack.mediaFile.uri }}
               useNativeControls={false}
               resizeMode={ResizeMode.CONTAIN}
@@ -155,15 +198,26 @@ export default function Player() {
               isLooping={repeatMode === 'one'}
               onPlaybackStatusUpdate={handleVideoStatusUpdate}
               onError={handleVideoError}
-            />
-          )}
-          <Text className='absolute w-fit bottom-2 text-white bg-black/30 py-1 px-2 rounded text-center' numberOfLines={1} ellipsizeMode="tail">
-             {currentTrack?.mediaFile.name ?? 'None'}
-          </Text>
+            />:
+            currentTrack?.mediaFile.type === 'audio' ?
+            <View />:
+            <Text
+              className='text-black/55 text-2xl font-bold'
+            >
+              {playerScreen.message}
+            </Text>
+          }
+          {
+            currentTrack?.mediaFile.name !== undefined ?
+            <Text className='absolute w-fit bottom-2 text-white bg-black/30 py-1 px-2 rounded text-center' numberOfLines={1} ellipsizeMode="tail">
+              {currentTrack?.mediaFile.name}
+            </Text>:
+            null
+          }
         </View>
 
         <View className='w-full p-2 bg-green-800 rounded-xl'>
-            <View className='flex-row items-center w-full'>
+            <View className='flex-row mt-3 items-center w-full'>
                 <Text className='text-white mx-3 text-center'>
                     {formatTime(isSeeking ? seekValue : playbackStatus.positionMillis)}
                 </Text>
@@ -196,39 +250,39 @@ export default function Player() {
             <View className="flex-row justify-around mt-4">
               <Button
                 onPress={handlePrevious}
-                disabled={!currentTrack}
-                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+                disabled={!currentTrack || !actionFlag}
+                className='w-12 h-12 justify-center items-center bg-slate-800 rounded-full'
               >
-                <FontAwesome6 name='backward' />
+                <FontAwesome6 name='backward' size={20} />
               </Button>
               <Button
                 onPress={handlePlayPause}
-                disabled={!currentTrack}
-                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+                disabled={!currentTrack  || !actionFlag}
+                className='w-12 h-12 justify-center items-center bg-slate-800 rounded-full'
               >
-                { playbackStatus.isPlaying ? <FontAwesome6 name='pause' />: <FontAwesome6 name='play' /> }
+                { playbackStatus.isPlaying ? <FontAwesome6 name='pause' size={20} />: <FontAwesome6 name='play' size={20} /> }
               </Button>
               <Button
                 onPress={handleNext}
-                disabled={!currentTrack}
-                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+                disabled={!currentTrack  || !actionFlag}
+                className='w-12 h-12 justify-center items-center bg-slate-800 rounded-full'
               >
-                <FontAwesome6 name='forward' />
+                <FontAwesome6 name='forward' size={20} />
               </Button>
             </View>
 
             <View className="flex-row justify-around mt-4">
               <Button
                 onPress={handleToggleShuffle}
-                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+                className='w-12 h-12 justify-center items-center bg-slate-800 rounded-full'
               >
-                { shuffle? <FontAwesome6 name='shuffle' color="green" />: <FontAwesome6 name="shuffle" color="red" /> }
+                { shuffle? <FontAwesome6 name='shuffle' size={20} color="green" />: <FontAwesome6 name="shuffle" size={20} color="red" /> }
               </Button>
               <Button
                 onPress={handleToggleRepeat}
-                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+                className='w-12 h-12 justify-center items-center bg-slate-800 rounded-full'
               >
-                { repeatMode === 'none'? <FontAwesome6 name='repeat' color="red" />: <FontAwesome6 name='repeat' color="green" /> }
+                { repeatMode === 'none'? <FontAwesome6 name='repeat' size={20} color="red" />: <FontAwesome6 name='repeat' size={20} color="green" /> }
               </Button>
             </View>
 

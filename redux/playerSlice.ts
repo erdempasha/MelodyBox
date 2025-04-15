@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { REHYDRATE } from 'redux-persist';
 import { AVPlaybackStatus, Audio } from 'expo-av';
 import { AppDispatch, RootState } from './store';
 import { IdType, MediaFile, MediaTypes } from "./librarySlice";
@@ -338,6 +339,7 @@ export const previousTrackAsync = createAsyncThunk<
     } else {
        console.warn("Seek to 0 for video track via previous action not implemented via service. UI should handle.");
     }
+    
   }
 );
 
@@ -445,6 +447,27 @@ const playerSlice = createSlice({
             didJustFinish: false,
         };
     }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(REHYDRATE, (state, action: any) => {
+      if (action.payload && action.payload.player && action.key === 'root') {
+        const rehydratedPlayerState = action.payload.player as PlayerState;
+        return {
+          ...rehydratedPlayerState,
+          playbackStatus: {
+            ...rehydratedPlayerState.playbackStatus,
+            isLoaded: false, 
+            isPlaying: false,
+            isBuffering: false, 
+            didJustFinish: false,
+            error: undefined,
+          },
+          isTransitioning: false,
+        };
+      }
+
+      return state;
+    });
   },
 });
 
