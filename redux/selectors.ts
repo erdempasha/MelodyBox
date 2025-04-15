@@ -38,3 +38,15 @@ export const getMediaFiles = (
     .find(album => album.id === albumId)
     ?.files;
 }
+
+export const selectCurrentTrack = (
+  state: RootState
+) => state.player.currentTrack;
+
+export const selectPlaybackStatus = (
+  state: RootState
+) => state.player.playbackStatus;
+
+export const selectPlayerState = (
+  state: RootState
+) => state.player;

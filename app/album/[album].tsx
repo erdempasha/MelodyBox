@@ -177,7 +177,7 @@ export default function AlbumModal() {
 
   return (
     <View className='flex-1 justify-center items-center p-2'>
-      <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-blue-500 shadow-gray-400 shadow-2xl p-5">
+      <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-blue-500 p-5">
         <FlatList
           className='w-full'
           data={files}

@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { persistor } from "@/redux/store";
 import { loadStateForTesting } from "@/redux/librarySlice"
-import { fakeLibraryData } from "@/constants/testData";
+import { sampleLibraryState } from '@/constants/testData';
 
 import { Button } from "@/components/Button";
 import { LinkButton } from "@/components/LinkButton";
@@ -14,7 +14,7 @@ export default function Test() {
   const dispatch = useAppDispatch();
   
   const loadFakeData = () => {
-    dispatch(loadStateForTesting(fakeLibraryData));
+    dispatch(loadStateForTesting(sampleLibraryState));
     console.log("Data Loaded");
   };
 

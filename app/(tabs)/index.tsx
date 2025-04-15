@@ -15,13 +15,15 @@ import {
   previousTrackAsync,
   toggleShuffle,
   setRepeatMode,
-  selectPlayerState,
   reloadPersistedTrackAsync,
   stopPlaybackAsync,
   handleTrackFinishAsync,
   _updatePlaybackStatusInternal,
   seekAsync,
 } from '@/redux/playerSlice';
+import {
+  selectPlayerState
+} from '@/redux/selectors';
 
 import { sampleLibraryState } from '@/constants/testData';
 
@@ -51,14 +53,14 @@ export default function PlayerPage() {
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
 
-  useEffect(() => {
-    dispatch(loadStateForTesting(sampleLibraryState));
-    if (!initialLoadAttempted.current && currentTrack) {
-       console.log("Attempting initial reload check...");
-       dispatch(reloadPersistedTrackAsync());
-    }
-    initialLoadAttempted.current = true;
-  }, [dispatch, currentTrack]);
+  //useEffect(() => {
+  //  dispatch(loadStateForTesting(sampleLibraryState));
+  //  if (!initialLoadAttempted.current && currentTrack) {
+  //     console.log("Attempting initial reload check...");
+  //     dispatch(reloadPersistedTrackAsync());
+  //  }
+  //  initialLoadAttempted.current = true;
+  //}, [dispatch, currentTrack]);
 
   useEffect(() => {
     if (!isSeeking) {

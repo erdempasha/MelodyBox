@@ -13,6 +13,7 @@ export default function TabLayout() {
         tabBarStyle: {
           elevation: 0,
           shadowOpacity: 0,
+          boxShadow: "none",
           backgroundColor: '#ffffff',
           borderTopWidth: 0,
         },
