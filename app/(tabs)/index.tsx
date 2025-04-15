@@ -1,11 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Button, FlatList, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { Video, AVPlaybackStatus, ResizeMode } from 'expo-av';
 import Slider from '@react-native-community/slider';
 
+import { Button } from '@/components/Button';
+import { LinkButton } from '@/components/LinkButton';
+
 import { AppDispatch, RootState } from '@/redux/store';
-import { loadStateForTesting, Album, MediaFile } from '@/redux/librarySlice';
-import { Video, AVPlaybackStatus, ResizeMode } from 'expo-av';
+import {
+  Album,
+  MediaFile
+} from '@/redux/librarySlice';
 import {
   Track,
   RepeatMode,
@@ -20,47 +27,30 @@ import {
   handleTrackFinishAsync,
   _updatePlaybackStatusInternal,
   seekAsync,
+  sanitizePlaybackStatus,
 } from '@/redux/playerSlice';
 import {
+  getAlbums,
   selectPlayerState
 } from '@/redux/selectors';
 
-import { sampleLibraryState } from '@/constants/testData';
+import "@/global.css";
 
-const formatTime = (millis: number | undefined | null): string => {
-  if (millis === null || typeof millis === 'undefined' || isNaN(millis) || millis < 0) {
-      return '00:00';
-  }
-  const totalSeconds = Math.floor(millis / 1000);
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-  return `${minutes}:${seconds}`;
-};
 
-export default function PlayerPage() {
+export default function Player() {
   const dispatch = useDispatch<AppDispatch>();
-  const albums = useSelector((state: RootState) => state.library.albums);
+  const albums = useSelector(getAlbums);
   const {
     currentTrack,
     playbackStatus,
     shuffle,
     repeatMode
   } = useSelector(selectPlayerState);
-
+  
   const videoRef = useRef<Video>(null);
-  const initialLoadAttempted = useRef(false);
-
+  
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
-
-  //useEffect(() => {
-  //  dispatch(loadStateForTesting(sampleLibraryState));
-  //  if (!initialLoadAttempted.current && currentTrack) {
-  //     console.log("Attempting initial reload check...");
-  //     dispatch(reloadPersistedTrackAsync());
-  //  }
-  //  initialLoadAttempted.current = true;
-  //}, [dispatch, currentTrack]);
 
   useEffect(() => {
     if (!isSeeking) {
@@ -68,24 +58,15 @@ export default function PlayerPage() {
     }
   }, [playbackStatus.positionMillis, isSeeking]);
 
-  const handlePlayTrack = (selectedFile: MediaFile, album: Album) => {
-    const trackToPlay: Track = {
-      albumId: album.id,
-      mediaFile: selectedFile,
-    };
-    const albumTracks: Track[] = album.files.map(file => ({
-      albumId: album.id,
-      mediaFile: file,
-    }));
-    dispatch(setTrackAsync({ track: trackToPlay, albumTracks }));
-  };
-
   const handlePlayPause = async () => {
     if (!currentTrack) return;
+
     if (currentTrack.mediaFile.type === 'audio') {
       dispatch(playPauseAsync());
     } else if (currentTrack.mediaFile.type === 'video') {
+    
       if (!videoRef.current) return;
+    
       try {
         const status = await videoRef.current.getStatusAsync();
         if (status.isLoaded) {
@@ -106,16 +87,15 @@ export default function PlayerPage() {
   };
 
   const handlePrevious = () => {
-    // This thunk now handles seeking audio / triggering state change for video
     dispatch(previousTrackAsync());
-    // If video seek (> threshold) is desired here, it needs specific UI handling
-    // or modification of previousTrackAsync to signal seek intent differently.
   };
 
   const handleSeek = async (positionMillis: number) => {
     if (!currentTrack || !playbackStatus.isLoaded) return;
+
     const clampedPosition = Math.max(0, Math.min(positionMillis, playbackStatus.durationMillis ?? positionMillis));
     console.log(`Seeking to: ${clampedPosition}`);
+    
     if (currentTrack.mediaFile.type === 'audio') {
         dispatch(seekAsync({ positionMillis: clampedPosition }));
     } else if (currentTrack.mediaFile.type === 'video') {
@@ -136,199 +116,125 @@ export default function PlayerPage() {
   };
 
   const handleVideoStatusUpdate = (status: AVPlaybackStatus) => {
-      dispatch(_updatePlaybackStatusInternal(status));
+      dispatch(_updatePlaybackStatusInternal(sanitizePlaybackStatus(status)));
       if (status.isLoaded && status.didJustFinish) {
           console.log("Video finished playing.");
           dispatch(handleTrackFinishAsync());
       }
   };
 
-  const renderTrackItem = ({ item: file, album }: { item: MediaFile, album: Album }) => (
-    <Pressable key={file.id} onPress={() => handlePlayTrack(file, album)} style={styles.trackItem}>
-      <Text style={currentTrack?.mediaFile.id === file.id ? styles.currentTrackText : styles.trackText}>
-        {file.name} ({file.type})
-      </Text>
-    </Pressable>
-  );
+  const formatTime = (millis: number | undefined | null): string => {
+    if (millis === null || typeof millis === 'undefined' || isNaN(millis) || millis < 0) {
+        return '00:00';
+    }
+    const totalSeconds = Math.floor(millis / 1000);
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  };
 
-  const renderAlbumItem = ({ item: album }: { item: Album }) => (
-    <View key={album.id} style={styles.albumContainer}>
-      <Text style={styles.albumTitle}>{album.title}</Text>
-      {album.files.map(file => renderTrackItem({ item: file, album }))}
-    </View>
-  );
+  const handleVideoError = (error: string) => {
+    console.error("Video Error:", error);
+    dispatch(_updatePlaybackStatusInternal(sanitizePlaybackStatus({
+      isLoaded: false,
+      error: error
+    })));
+  };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.playerUIContainer}>
-        {currentTrack?.mediaFile.type === 'video' && (
-          <Video
-            ref={videoRef}
-            style={styles.video}
-            source={{ uri: currentTrack.mediaFile.uri }}
-            useNativeControls={false}
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay={playbackStatus.isPlaying}
-            isLooping={repeatMode === 'one'}
-            onPlaybackStatusUpdate={handleVideoStatusUpdate}
-            onError={(error) => { console.error("Video Error:", error); dispatch(_updatePlaybackStatusInternal({isLoaded: false, error: error}))}}
-          />
-        )}
-
-        <View style={styles.playerControls}>
-          <Text style={styles.statusText} numberOfLines={1} ellipsizeMode="tail">
-              Now Playing: {currentTrack?.mediaFile.name ?? 'None'} ({currentTrack?.mediaFile.type ?? ''})
-          </Text>
-          <Text style={styles.statusText}>
-              Status: {playbackStatus.isPlaying ? 'Playing' : playbackStatus.isLoaded ? 'Paused' : 'Stopped'}
-              {playbackStatus.isBuffering ? ' (Buffering)' : ''}
-          </Text>
-
-          <View style={styles.sliderContainer}>
-            <Text style={styles.timeText}>
-                {formatTime(isSeeking ? seekValue : playbackStatus.positionMillis)}
-            </Text>
-            <Slider
-                style={styles.slider}
-                minimumValue={0}
-                maximumValue={playbackStatus.durationMillis || 1}
-                value={isSeeking ? seekValue : playbackStatus.positionMillis}
-                minimumTrackTintColor="#007AFF"
-                maximumTrackTintColor="#cccccc"
-                thumbTintColor="#007AFF"
-                disabled={!playbackStatus.isLoaded}
-                onValueChange={(value) => {
-                    setSeekValue(value);
-                }}
-                onSlidingStart={(value) => {
-                    setIsSeeking(true);
-                    setSeekValue(value);
-                }}
-                onSlidingComplete={(value) => {
-                    setIsSeeking(false);
-                    handleSeek(value);
-                }}
+    <View className="flex-1 justify-center items-center bg-white">
+      <View className="h-5/6 w-5/6 justify-between items-center rounded-3xl bg-green-600 p-4">
+        <View className="flex-1 w-full justify-center items-center bg-green-800 mb-4 overflow-hidden rounded-xl">
+          {currentTrack?.mediaFile.type === 'video' && (
+            <Video
+              ref={videoRef}
+              className='flex-1 w-full bg-black'
+              source={{ uri: currentTrack.mediaFile.uri }}
+              useNativeControls={false}
+              resizeMode={ResizeMode.CONTAIN}
+              shouldPlay={playbackStatus.isPlaying}
+              isLooping={repeatMode === 'one'}
+              onPlaybackStatusUpdate={handleVideoStatusUpdate}
+              onError={handleVideoError}
             />
-            <Text style={styles.timeText}>
-                {formatTime(playbackStatus.durationMillis)}
-            </Text>
-          </View>
-          {/* --- End Slider --- */}
+          )}
+          <Text className='absolute w-fit bottom-2 text-white bg-black/30 py-1 px-2 rounded text-center' numberOfLines={1} ellipsizeMode="tail">
+             {currentTrack?.mediaFile.name ?? 'None'}
+          </Text>
+        </View>
 
-          {playbackStatus.error && <Text style={styles.errorText}>Error: {playbackStatus.error}</Text>}
+        <View className='w-full p-2 bg-green-800 rounded-xl'>
+            <View className='flex-row items-center w-full'>
+                <Text className='text-white mx-3 text-center'>
+                    {formatTime(isSeeking ? seekValue : playbackStatus.positionMillis)}
+                </Text>
 
-          <View style={styles.buttonRow}>
-            <Button title="Prev" onPress={handlePrevious} disabled={!currentTrack} />
-            <Button
-              title={playbackStatus.isPlaying ? 'Pause' : 'Play'}
-              onPress={handlePlayPause}
-              disabled={!currentTrack || (!playbackStatus.isLoaded && currentTrack?.mediaFile.type === 'audio')}
-            />
-            <Button title="Next" onPress={handleNext} disabled={!currentTrack} />
-          </View>
-          <View style={styles.buttonRow}>
-             <Button
-               title={`Shuffle: ${shuffle ? 'ON' : 'OFF'}`}
-               onPress={handleToggleShuffle}
-               color={shuffle ? 'dodgerblue' : 'gray'}
-              />
-             <Button
-               title={`Repeat: ${repeatMode.toUpperCase()}`}
-               onPress={handleToggleRepeat}
-               color={repeatMode !== 'none' ? 'dodgerblue' : 'gray'}
-             />
-          </View>
+                <Slider
+                    style={{ flex: 1 }}
+                    minimumValue={0}
+                    maximumValue={playbackStatus.durationMillis || 1}
+                    value={isSeeking ? seekValue : playbackStatus.positionMillis}
+                    minimumTrackTintColor="#FFFFFF"
+                    maximumTrackTintColor="#AAAAAA"
+                    thumbTintColor="#FFFFFF"
+                    disabled={!playbackStatus.isLoaded}
+                    onValueChange={(value) => { setSeekValue(value); }}
+                    onSlidingStart={(value) => { setIsSeeking(true); setSeekValue(value); }}
+                    onSlidingComplete={(value) => { setIsSeeking(false); handleSeek(value); }}
+                />
+
+                <Text className=' text-white mx-3 text-center'>
+                    {formatTime(playbackStatus.durationMillis)}
+                </Text>
+            </View>
+
+            <View className="flex-row justify-around mt-4">
+              <LinkButton href="/test">
+                <Text className="text-white p-3 font-bold">Admin Page</Text>
+              </LinkButton>
+            </View>
+
+            <View className="flex-row justify-around mt-4">
+              <Button
+                onPress={handlePrevious}
+                disabled={!currentTrack}
+                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+              >
+                <FontAwesome6 name='backward' />
+              </Button>
+              <Button
+                onPress={handlePlayPause}
+                disabled={!currentTrack}
+                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+              >
+                { playbackStatus.isPlaying ? <FontAwesome6 name='pause' />: <FontAwesome6 name='play' /> }
+              </Button>
+              <Button
+                onPress={handleNext}
+                disabled={!currentTrack}
+                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+              >
+                <FontAwesome6 name='forward' />
+              </Button>
+            </View>
+
+            <View className="flex-row justify-around mt-4">
+              <Button
+                onPress={handleToggleShuffle}
+                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+              >
+                { shuffle? <FontAwesome6 name='shuffle' color="green" />: <FontAwesome6 name="shuffle" color="red" /> }
+              </Button>
+              <Button
+                onPress={handleToggleRepeat}
+                className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+              >
+                { repeatMode === 'none'? <FontAwesome6 name='repeat' color="red" />: <FontAwesome6 name='repeat' color="green" /> }
+              </Button>
+            </View>
+
         </View>
       </View>
-
-      <View style={styles.librarySection}>
-        <Text style={styles.libraryTitle}>Library</Text>
-        {albums.map(album => renderAlbumItem({ item: album }))}
-      </View>
-    </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  playerUIContainer: {},
-  video: {
-    width: '100%',
-    height: 250,
-    backgroundColor: 'black',
-  },
-  playerControls: {
-    padding: 15,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: '#f9f9f9',
-    marginTop: 5,
-  },
-  statusText: {
-    fontSize: 14,
-    marginBottom: 5,
-    color: '#333',
-  },
-   errorText: {
-    fontSize: 14,
-    marginBottom: 5,
-    color: 'red',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 15,
-  },
-  librarySection: {
-     marginTop: 20,
-     paddingHorizontal: 10,
-  },
-  libraryTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      marginBottom: 10,
-  },
-  albumContainer: {
-    marginBottom: 15,
-  },
-  albumTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    paddingLeft: 5,
-  },
-  trackItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  trackText: {
-    fontSize: 16,
-  },
-  currentTrackText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'dodgerblue',
-  },
-  sliderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    marginHorizontal: 5,
-  },
-  slider: {
-    flex: 1,
-    height: 40,
-    marginHorizontal: 5,
-  },
-  timeText: {
-      fontSize: 12,
-      color: '#555',
-      minWidth: 40,
-      textAlign: 'center',
-  },
-});

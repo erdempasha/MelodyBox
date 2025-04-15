@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   getAlbumById,
 } from "@/redux/selectors";
-import { addFileToAlbum, IdType, MediaTypes, removeFileFromAlbum, renameFile } from '@/redux/librarySlice';
+import { addFileToAlbum, IdType, MediaFile, MediaTypes, removeFileFromAlbum, renameFile } from '@/redux/librarySlice';
 
 import {
   FileCard,
@@ -22,6 +22,7 @@ import {
 import { LinkButton } from '@/components/LinkButton';
 import { Button } from "@/components/Button"
 import { albumModal } from "@/constants/strings";
+import { setTrackAsync } from '@/redux/playerSlice';
 
 type ContextActions = "rename" | "delete" | "notchosen";
 
@@ -175,6 +176,18 @@ export default function AlbumModal() {
     setContextDialogVisible(true);
   };
 
+  const mediaPressHandler = (file: MediaFile) => {
+    dispatch(setTrackAsync({
+      track: {
+        albumId: id,
+        mediaFile: file
+      },
+      albumTracks: album.files.map(f => ({ albumId: id, mediaFile: f }))
+    }));
+
+    router.push('/');
+  };
+
   return (
     <View className='flex-1 justify-center items-center p-2'>
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-blue-500 p-5">
@@ -182,7 +195,12 @@ export default function AlbumModal() {
           className='w-full'
           data={files}
           renderItem={
-            ({ item: file }) => (FileCard({ id: file.id, name: file.name, contextCallback: () => contextInvoke(file.id) }))
+            ({ item: file }) => (FileCard({
+              id: file.id,
+              name: file.name,
+              cardClickCallback: () => mediaPressHandler(file),
+              contextCallback: () => contextInvoke(file.id)
+            }))
           }
           ItemSeparatorComponent={Seperator}
           ListEmptyComponent={NoFileFound}

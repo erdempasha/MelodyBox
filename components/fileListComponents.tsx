@@ -10,12 +10,14 @@ import "@/global.css";
 type Props = {
   id: string;
   name: string;
+  cardClickCallback?: () => void;
   contextCallback?: () => void
 };
 
 export function FileCard({
   id,
   name,
+  cardClickCallback,
   contextCallback
 }: Props) {
   
@@ -23,7 +25,12 @@ export function FileCard({
     <View
       className='flex-row items-center justify-center'
     >
-      <Text className='text-gray-900'>{name}</Text>
+      <Button
+        className='bg-transparent h-fit w-auto items-center justify-center p-2'
+        onPress={cardClickCallback}
+      >
+        <Text className='text-gray-900'>{name}</Text>
+      </Button>
       <Button
         className='bg-transparent h-fit w-fit ml-auto items-center justify-center'
         onPress={contextCallback}
