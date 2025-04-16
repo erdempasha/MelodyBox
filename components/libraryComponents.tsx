@@ -31,7 +31,7 @@ export function AlbumCard({
       className='flex-row items-center justify-center'
     >
       <LinkButton
-        className='bg-transparent h-fit w-auto items-center justify-center p-2'
+        className='bg-transparent h-fit flex-1 items-center justify-center p-2'
         href={{
           pathname: "/album/[album]",
           params: {
@@ -39,11 +39,11 @@ export function AlbumCard({
           }
         }}
       >
-        <Text className='text-white'>{name}</Text>
+        <Text className='text-white text-left mr-auto'>{name}</Text>
       </LinkButton>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-auto items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
         onPress={downButtonCallback}
       >
         <FontAwesome className='p-2' name="angle-down" size={24} color="white" />

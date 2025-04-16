@@ -194,7 +194,6 @@ export default function Player() {
               source={{ uri: currentTrack.mediaFile.uri }}
               useNativeControls={false}
               resizeMode={ResizeMode.CONTAIN}
-              shouldPlay={playbackStatus.isPlaying}
               isLooping={repeatMode === 'one'}
               onPlaybackStatusUpdate={handleVideoStatusUpdate}
               onError={handleVideoError}

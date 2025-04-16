@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Link, Href } from 'expo-router'
+import { Link, Href, LinkProps } from 'expo-router'
 
 import "@/global.css";
 
@@ -10,17 +10,22 @@ type Props = {
   children: React.ReactNode;
 };
 
+type LinkButtonProps = Props & LinkProps;
+
 export function LinkButton({
   href,
   className,
-  children
-}: Props) {
+  children,
+  ...linkProps
+}: LinkButtonProps) {
 
   return (
-    <Link href={href}>
-      <View className={ className ?? 'flex-wrap justify-center items-center bg-slate-800 rounded-2xl' }>
-        { children }
-      </View>
+    <Link
+      className={ className ?? 'flex-wrap justify-center items-center bg-slate-800 rounded-2xl' }
+      href={href}
+      {...linkProps}
+    >
+      { children }
     </Link>
   );
 }

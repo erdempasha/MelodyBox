@@ -57,6 +57,8 @@ export default function AlbumModal() {
   const flatListRef = useRef<FlatList<MediaFile>>(null);
 
   useEffect(() => {
+
+    if (highlightId === undefined) return;
     
     const timer = setTimeout(() => {
       const targetIndex = album?.files.findIndex(file => file.id === highlightId);
@@ -73,13 +75,13 @@ export default function AlbumModal() {
       } catch (error) {
         console.error("Error scrolling to index:", error);
       }
-    }, 500);
+    }, 400);
 
     return () => {
       console.log("Clearing scroll timeout");
       clearTimeout(timer);
     };
-  }, [album, highlightId]);
+  }, [highlightId]);
 
   const handleAddFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({

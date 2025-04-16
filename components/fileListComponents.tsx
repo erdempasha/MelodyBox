@@ -36,14 +36,14 @@ export function FileCard({
       }
     >
       <Button
-        className='bg-transparent h-fit w-auto items-center justify-center p-2'
+        className='bg-transparent h-fit flex-1 items-center justify-center p-2'
         onPress={cardClickCallback}
       >
-        <Text className='text-gray-900'>{name}</Text>
+        <Text className='text-gray-900 text-left mr-auto'>{name}</Text>
       </Button>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-auto items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
         onPress={downButtonCallback}
       >
         <FontAwesome className='p-2' name="angle-down" size={24} color="#111827" />
