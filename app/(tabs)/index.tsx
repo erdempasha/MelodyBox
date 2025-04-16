@@ -230,9 +230,32 @@ export default function Player() {
                     maximumTrackTintColor="#AAAAAA"
                     thumbTintColor="#FFFFFF"
                     disabled={!playbackStatus.isLoaded}
-                    onValueChange={(value) => { setSeekValue(value); }}
-                    onSlidingStart={(value) => { setIsSeeking(true); setSeekValue(value); }}
-                    onSlidingComplete={(value) => { setIsSeeking(false); handleSeek(value); }}
+                    onValueChange={(value) => {
+                      if (!actionFlag) return;
+                      setActionFlag(false);
+
+                      setSeekValue(value);
+
+                      setActionFlag(true);
+                    }}
+                    onSlidingStart={(value) => {
+                      if (!actionFlag) return;
+                      setActionFlag(false);
+                      
+                      setIsSeeking(true);
+                      setSeekValue(value);
+
+                      setActionFlag(true);
+                    }}
+                    onSlidingComplete={(value) => {
+                      if (!actionFlag) return;
+                      setActionFlag(false);
+
+                      setIsSeeking(false);
+                      handleSeek(value);
+
+                      setActionFlag(true);
+                    }}
                 />
 
                 <Text className=' text-white mx-3 text-center'>
