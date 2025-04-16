@@ -117,6 +117,9 @@ const albumSlice = createSlice({
     loadStateForTesting: (state, action: PayloadAction<LibraryState>) => {
       return action.payload;
     },
+    purgeState: (state) => {
+      return { albums: [] };
+    },
   },
 });
 
@@ -128,6 +131,7 @@ export const {
   removeFileFromAlbum,
   renameFile,
   loadStateForTesting,
+  purgeState,
 } = albumSlice.actions;
 
 export default albumSlice.reducer;

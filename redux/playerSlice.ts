@@ -446,7 +446,10 @@ const playerSlice = createSlice({
             error: undefined,
             didJustFinish: false,
         };
-    }
+    },
+    resetPlayerState: (state) => {
+      return { ...initialState };
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE, (state, action: any) => {
@@ -476,6 +479,7 @@ export const {
   clearQueue,
   setRepeatMode,
   toggleShuffle,
+  resetPlayerState,
   _updatePlaybackStatusInternal,
 } = playerSlice.actions;
 

@@ -46,7 +46,6 @@ export default function RootLayout() {
               presentation: "modal",
             }}
           />
-          <Stack.Screen name="test" />
           <Stack.Screen name="+not-found" />
         </Stack>
       </PersistGate>

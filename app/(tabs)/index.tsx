@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import { Video, AVPlaybackStatus, ResizeMode } from 'expo-av';
 import Slider from '@react-native-community/slider';
 
@@ -200,7 +200,7 @@ export default function Player() {
               onError={handleVideoError}
             />:
             currentTrack?.mediaFile.type === 'audio' ?
-            <View />:
+            <Ionicons name='musical-notes' size={54} style={{ opacity: 0.5 }} />:
             <Text
               className='text-black/55 text-2xl font-bold'
             >
@@ -239,12 +239,6 @@ export default function Player() {
                 <Text className=' text-white mx-3 text-center'>
                     {formatTime(playbackStatus.durationMillis)}
                 </Text>
-            </View>
-
-            <View className="flex-row justify-around mt-4">
-              <LinkButton href="/test">
-                <Text className="text-white p-3 font-bold">Admin Page</Text>
-              </LinkButton>
             </View>
 
             <View className="flex-row justify-around mt-4">

@@ -54,6 +54,31 @@ export default function AlbumModal() {
 
   const flatListRef = useRef<FlatList>(null);
 
+  useEffect(() => {
+    
+    const timer = setTimeout(() => {
+      const targetIndex = album?.files.findIndex(file => file.id === highlightId);
+
+      if (targetIndex === -1 || targetIndex === undefined) return;
+
+      try {
+        flatListRef.current?.scrollToIndex({
+          index: targetIndex,
+          animated: true,
+          viewPosition: 0.5,
+        });
+        console.log(`Scrolled to index ${targetIndex}`);
+      } catch (error) {
+        console.error("Error scrolling to index:", error);
+      }
+    }, 500);
+
+    return () => {
+      console.log("Clearing scroll timeout");
+      clearTimeout(timer);
+    };
+  }, [album, highlightId]);
+
   const handleAddFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: ["audio/*" , "video/*"],
@@ -93,33 +118,6 @@ export default function AlbumModal() {
     );
   }
 
-  const { id, title, files, createdAt } = album;
-
-  useEffect(() => {
-    
-    const timer = setTimeout(() => {
-      const targetIndex = files.findIndex(file => file.id === highlightId);
-
-      if (targetIndex === -1) return;
-
-      try {
-        flatListRef.current?.scrollToIndex({
-          index: targetIndex,
-          animated: true,
-          viewPosition: 0.5,
-        });
-        console.log(`Scrolled to index ${targetIndex}`);
-      } catch (error) {
-        console.error("Error scrolling to index:", error);
-      }
-    }, 500);
-
-    return () => {
-      console.log("Clearing scroll timeout");
-      clearTimeout(timer);
-    };
-  }, [files, highlightId]);
-
   const handleSaveDialog = () => {
     if (fileName.trim() === "") {
       setDialogError(true);
@@ -127,7 +125,7 @@ export default function AlbumModal() {
     }
 
     dispatch(addFileToAlbum({
-      albumId: id,
+      albumId: album.id,
       name: fileName.trim(),
       uri: pickedFileUri,
       type: pickedMediaType,
@@ -151,7 +149,7 @@ export default function AlbumModal() {
 
     if (chosenFile !== undefined) {
       dispatch(renameFile({
-        albumId: id,
+        albumId: album.id,
         fileId: chosenFile,
         name: fileName.trim(),
       }));
@@ -163,7 +161,7 @@ export default function AlbumModal() {
   const handleDeleteAlbum = () => {
     if (chosenFile !== undefined) {
       dispatch(removeFileFromAlbum({
-        albumId: id,
+        albumId: album.id,
         fileId: chosenFile
       }));
     }
@@ -176,7 +174,7 @@ export default function AlbumModal() {
 
     if (file !== undefined) {
       dispatch(addToQueue({
-        albumId: id,
+        albumId: album.id,
         mediaFile: file,
       }));
     }
@@ -230,10 +228,10 @@ export default function AlbumModal() {
   const mediaPressHandler = (file: MediaFile) => {
     dispatch(setTrackAsync({
       track: {
-        albumId: id,
+        albumId: album.id,
         mediaFile: file
       },
-      albumTracks: album.files.map(f => ({ albumId: id, mediaFile: f }))
+      albumTracks: album.files.map(f => ({ albumId: album.id, mediaFile: f }))
     }));
 
     router.push('/');
@@ -245,7 +243,7 @@ export default function AlbumModal() {
         <FlatList
           ref={flatListRef}
           className='w-full'
-          data={files}
+          data={album.files}
           renderItem={
             ({ item: file }) => (FileCard({
               id: file.id,
@@ -257,7 +255,7 @@ export default function AlbumModal() {
           }
           ItemSeparatorComponent={Seperator}
           ListEmptyComponent={NoFileFound}
-          ListHeaderComponent={() => Header({ albumName: title })}
+          ListHeaderComponent={() => Header({ albumName: album.title })}
           keyExtractor={file => file.id}
         />
         <Button
