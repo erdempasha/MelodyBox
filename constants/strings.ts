@@ -16,6 +16,7 @@ export const playerScreen = {
 
 export const libraryScreen = {
     noAlbumFound: "You can create an album by clicking on the plus button.",
+    noResultsFound: "No results found.",
     albumHeader: "albums",
     dialogTitle: "Name Your Media",
     inputPlaceholder: "Enter an album name",
@@ -27,6 +28,7 @@ export const libraryScreen = {
     renameAlbum: "Rename Album",
     deleteAlbum: "Delete Album",
     contextTitle: "Actions",
+    searchPlaceholder: "Search Here",
     areYouSure: "Are you sure?",
 };
 

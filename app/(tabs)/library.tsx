@@ -2,13 +2,14 @@ import { useState } from "react";
 import { View, FlatList, Text } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
-import { Dialog, Input, Icon } from '@rneui/themed';
+import { Dialog, Input, Icon, SearchBar } from '@rneui/themed';
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   getAlbums,
 } from "@/redux/selectors";
 import { 
+  Album,
   createAlbum,
   deleteAlbum,
   IdType,
@@ -19,7 +20,10 @@ import {
   AlbumCard,
   Seperator,
   NoAlbumFound,
-  AlbumHeader
+  AlbumHeader,
+  TrackCard,
+  SearchHeader,
+  NoResultsFound
 } from "@/components/libraryComponents"
 import { Button } from "@/components/Button"
 import { libraryScreen } from "@/constants/strings";
@@ -35,6 +39,8 @@ export default function Library() {
   const [ contextDialogError, setContextDialogError ] = useState(false);
   const [ contextDialogState, setContextDialogState ] = useState<ContextActions>("notchosen");
   const [ chosenAlbum, setChosenAlbum ] = useState<IdType | undefined>(undefined);
+
+  const [ search, setSearch ] = useState("");
 
   const dispatch = useAppDispatch();
   const albums = useAppSelector(getAlbums);
@@ -132,26 +138,81 @@ export default function Library() {
     setContextDialogVisible(true);
   };
 
+  const updateSearch = (search: string) => {
+    setSearch(search);
+  };
+
+  const searchMediaByName = (
+    albumList: Album[],
+    searchTerm: string,
+  ) : {
+    albumId: IdType,
+    fileId: IdType,
+    fileName: string,
+  }[] => {
+
+    return albumList.flatMap(
+      album => album.files.filter(
+        file => file.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ).map(
+        file => ({
+          albumId: album.id,
+          fileId: file.id,
+          fileName: file.name,
+        })
+      )
+    );
+  };
+
   return (
     <View className="flex-1 justify-center items-center bg-white">
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-red-500 p-5">
-        <FlatList
-          className="w-full"
-          data={albums}
-          renderItem={
-            ({ item: album }) => (AlbumCard({ id: album.id, name: album.title, contextCallback: () => contextInvoke(album.id) }))
-          }
-          ItemSeparatorComponent={Seperator}
-          ListEmptyComponent={NoAlbumFound}
-          ListHeaderComponent={AlbumHeader}
-          keyExtractor={album => album.id}
-        /> 
-        <Button
-          className='ml-auto w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
-          onPress={handleAddAlbum}
-        >
-          <FontAwesome name="plus" size={20} color="white" />
-        </Button>
+        {
+          search === ""?
+          <FlatList
+            className="w-full"
+            data={albums}
+            renderItem={
+              ({ item: album }) => (AlbumCard({ id: album.id, name: album.title, contextCallback: () => contextInvoke(album.id) }))
+            }
+            ItemSeparatorComponent={Seperator}
+            ListEmptyComponent={NoAlbumFound}
+            ListHeaderComponent={AlbumHeader}
+            keyExtractor={album => album.id}
+          />:
+          <FlatList
+            className="w-full"
+            data={searchMediaByName(albums, search)}
+            renderItem={
+              ({ item }) => (TrackCard({ albumId: item.albumId, fileId: item.fileId, fileName: item.fileName }))
+            }
+            ItemSeparatorComponent={Seperator}
+            ListEmptyComponent={NoResultsFound}
+            ListHeaderComponent={SearchHeader({ term: search })}
+            keyExtractor={file => file.fileId}
+          />
+        }
+        
+        <View className="h-fit w-full flex-row justify-center items-center">
+          <SearchBar
+          placeholder={libraryScreen.searchPlaceholder}
+            round={true}
+            containerStyle={{
+              flex: 1,
+              backgroundColor: "transparent",
+              borderTopWidth: 0,
+              borderBottomWidth: 0
+            }}
+            onChangeText={updateSearch}
+            value={search}
+          />
+          <Button
+            className='w-10 h-10 justify-center items-center bg-slate-800 rounded-full'
+            onPress={handleAddAlbum}
+          >
+            <FontAwesome name="plus" size={20} color="white" />
+          </Button>  
+        </View> 
       </View>
 
       <Dialog

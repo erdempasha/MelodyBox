@@ -1,6 +1,8 @@
 import { View, Text } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
+import { IdType } from '@/redux/librarySlice';
+
 import { libraryScreen } from '@/constants/strings';
 
 import { Button } from './Button';
@@ -9,7 +11,7 @@ import { LinkButton } from './LinkButton';
 import "@/global.css";
 
 type Props = {
-  id: string;
+  id: IdType;
   name: string;
   contextCallback?: () => void
 };
@@ -65,6 +67,58 @@ export function NoAlbumFound() {
   return (
     <View className='h-full w-full items-center justify-center'>
       <Text className='text-white'>{libraryScreen.noAlbumFound}</Text>
+    </View>
+  );
+}
+
+type TrackCardProps = {
+  albumId: IdType;
+  fileId: IdType;
+  fileName: string;
+};
+
+export function TrackCard({
+  albumId,
+  fileId,
+  fileName,
+}: TrackCardProps) {
+
+  return (
+    <View
+      className='flex-row items-center justify-center'
+    >
+      <LinkButton
+        className='bg-transparent h-fit w-auto items-center justify-center p-2'
+        href={{
+          pathname: "/album/[album]",
+          params: {
+            album: albumId,
+            highlight: fileId,
+          }
+        }}
+      >
+        <Text className='text-white'>{fileName}</Text>
+      </LinkButton>
+    </View>
+  );
+}
+
+type SearchHeaderProps = {
+  term: string
+}
+
+export function SearchHeader({ term }: SearchHeaderProps) {
+  return (
+    <View className='h-fit w-full items-center justify-center'>
+      <Text className='text-white text-xl font-bold opacity-85'>{term}</Text>
+    </View>
+  );
+}
+
+export function NoResultsFound() {
+  return (
+    <View className='h-full w-full items-center justify-center'>
+      <Text className='text-white'>{libraryScreen.noResultsFound}</Text>
     </View>
   );
 }

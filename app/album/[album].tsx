@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRef, useState } from 'react';
 import { FlatList, Text, View, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from "expo-router";
@@ -37,7 +37,7 @@ import { albumModal } from "@/constants/strings";
 type ContextActions = "rename" | "delete" | "notchosen";
 
 export default function AlbumModal() {
-  const { album: albumId } = useLocalSearchParams<{ album: string }>();
+  const { album: albumId, highlight: highlightId } = useLocalSearchParams<{ album: IdType, highlight: IdType }>();
   const dispatch = useAppDispatch();
   const album = useAppSelector(state => getAlbumById(state, albumId))
   const [ dialogVisible, setDialogVisible ] = useState(false);
@@ -51,6 +51,8 @@ export default function AlbumModal() {
   const [ pickedFileUri, setPickedFileUri ] = useState<string>("");
   const [ pickedMediaType, setPickedMediaType ] = useState<MediaTypes>("audio");
   const [ fileName, setFileName ] = useState<string>("");
+
+  const flatListRef = useRef<FlatList>(null);
 
   const handleAddFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
@@ -92,6 +94,31 @@ export default function AlbumModal() {
   }
 
   const { id, title, files, createdAt } = album;
+
+  useEffect(() => {
+    
+    const timer = setTimeout(() => {
+      const targetIndex = files.findIndex(file => file.id === highlightId);
+
+      if (targetIndex === -1) return;
+
+      try {
+        flatListRef.current?.scrollToIndex({
+          index: targetIndex,
+          animated: true,
+          viewPosition: 0.5,
+        });
+        console.log(`Scrolled to index ${targetIndex}`);
+      } catch (error) {
+        console.error("Error scrolling to index:", error);
+      }
+    }, 500);
+
+    return () => {
+      console.log("Clearing scroll timeout");
+      clearTimeout(timer);
+    };
+  }, [files, highlightId]);
 
   const handleSaveDialog = () => {
     if (fileName.trim() === "") {
@@ -216,12 +243,14 @@ export default function AlbumModal() {
     <View className='flex-1 justify-center items-center p-2'>
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-blue-500 p-5">
         <FlatList
+          ref={flatListRef}
           className='w-full'
           data={files}
           renderItem={
             ({ item: file }) => (FileCard({
               id: file.id,
               name: file.name,
+              highlight: file.id === highlightId,
               cardClickCallback: () => mediaPressHandler(file),
               contextCallback: () => contextInvoke(file.id)
             }))

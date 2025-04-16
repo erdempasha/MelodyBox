@@ -10,6 +10,7 @@ import "@/global.css";
 type Props = {
   id: string;
   name: string;
+  highlight?: boolean;
   cardClickCallback?: () => void;
   contextCallback?: () => void
 };
@@ -17,13 +18,18 @@ type Props = {
 export function FileCard({
   id,
   name,
+  highlight,
   cardClickCallback,
   contextCallback
 }: Props) {
   
   return (
     <View
-      className='flex-row items-center justify-center'
+      className={
+        highlight === true?
+        'flex-row items-center justify-center bg-sky-400 rounded-md':
+        'flex-row items-center justify-center'
+      }
     >
       <Button
         className='bg-transparent h-fit w-auto items-center justify-center p-2'
