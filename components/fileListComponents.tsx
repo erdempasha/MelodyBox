@@ -11,6 +11,8 @@ type Props = {
   id: string;
   name: string;
   highlight?: boolean;
+  downButtonCallback?: () => void;
+  upButtonCallback?: () => void;
   cardClickCallback?: () => void;
   contextCallback?: () => void
 };
@@ -19,6 +21,8 @@ export function FileCard({
   id,
   name,
   highlight,
+  downButtonCallback,
+  upButtonCallback,
   cardClickCallback,
   contextCallback
 }: Props) {
@@ -37,11 +41,26 @@ export function FileCard({
       >
         <Text className='text-gray-900'>{name}</Text>
       </Button>
+
       <Button
         className='bg-transparent h-fit w-fit ml-auto items-center justify-center'
+        onPress={downButtonCallback}
+      >
+        <FontAwesome className='p-2' name="angle-down" size={24} color="#111827" />
+      </Button>
+
+      <Button
+        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        onPress={upButtonCallback}
+      >
+        <FontAwesome className='p-2' name="angle-up" size={24} color="#111827" />
+      </Button>
+
+      <Button
+        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
         onPress={contextCallback}
       >
-        <FontAwesome className='p-2' name="ellipsis-v" size={15} color="#111827" />
+        <FontAwesome className='p-2' name="ellipsis-v" size={16} color="#111827" />
       </Button>
     </View>
   );

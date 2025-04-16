@@ -120,6 +120,68 @@ const albumSlice = createSlice({
     purgeState: (state) => {
       return { albums: [] };
     },
+    moveAlbumDown: (state, action: PayloadAction<{ albumId: IdType }>) => {
+      const albums = state.albums;
+      const index = albums.findIndex(album => album.id === action.payload.albumId);
+
+      if (index < albums.length - 1 && index !== -1) {
+        [ albums[index], albums[index + 1] ] = [ albums[index + 1], albums[index] ];
+      }
+
+      state.albums = albums;
+    },
+    moveAlbumUp: (state, action: PayloadAction<{ albumId: IdType }>) => {
+      const albums = state.albums;
+      const index = albums.findIndex(album => album.id === action.payload.albumId);
+
+      if (index > 0) {
+        [ albums[index], albums[index - 1] ] = [ albums[index - 1], albums[index] ];
+      }
+
+      state.albums = albums;
+    },
+    moveFileDown: (state, action: PayloadAction<{ albumId: IdType, fileId: IdType }>) => {
+      state.albums = state.albums.map(
+        album => {
+          if (album.id === action.payload.albumId) {
+            
+            const files = album.files;
+            const index = files.findIndex(file => file.id === action.payload.fileId);
+
+            if (index < files.length - 1 && index !== -1) {
+              [ files[index], files[index + 1] ] = [ files[index + 1], files[index] ];
+            }
+
+            return {
+              ...album,
+              files: files,
+            };
+          }
+          return album;
+        }
+      ); 
+    },
+    moveFileUp: (state, action: PayloadAction<{ albumId: IdType, fileId: IdType }>) => {
+      state.albums = state.albums.map(
+        album => {
+          if (album.id === action.payload.albumId) {
+            
+            const files = album.files;
+            const index = files.findIndex(file => file.id === action.payload.fileId);
+
+            if (index > 0) {
+              [ files[index], files[index - 1] ] = [ files[index - 1], files[index] ];
+            }
+
+            return {
+              ...album,
+              files: files,
+            };
+          }
+          return album;
+        }
+      );
+    },
   },
 });
 
@@ -132,6 +194,10 @@ export const {
   renameFile,
   loadStateForTesting,
   purgeState,
+  moveAlbumDown,
+  moveAlbumUp,
+  moveFileDown,
+  moveFileUp,
 } = albumSlice.actions;
 
 export default albumSlice.reducer;

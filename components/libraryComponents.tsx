@@ -13,12 +13,16 @@ import "@/global.css";
 type Props = {
   id: IdType;
   name: string;
-  contextCallback?: () => void
+  downButtonCallback?: () => void;
+  upButtonCallback?: () => void;
+  contextCallback?: () => void;
 };
 
 export function AlbumCard({
   id,
   name,
+  downButtonCallback,
+  upButtonCallback,
   contextCallback
 }: Props) {
   
@@ -37,11 +41,26 @@ export function AlbumCard({
       >
         <Text className='text-white'>{name}</Text>
       </LinkButton>
+
       <Button
         className='bg-transparent h-fit w-fit ml-auto items-center justify-center'
+        onPress={downButtonCallback}
+      >
+        <FontAwesome className='p-2' name="angle-down" size={24} color="white" />
+      </Button>
+
+      <Button
+        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        onPress={upButtonCallback}
+      >
+        <FontAwesome className='p-2' name="angle-up" size={24} color="white" />
+      </Button>
+
+      <Button
+        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
         onPress={contextCallback}
       >
-        <FontAwesome className='p-2' name="ellipsis-v" size={15} color="white" />
+        <FontAwesome className='p-2' name="ellipsis-v" size={16} color="white" />
       </Button>
     </View>
   );

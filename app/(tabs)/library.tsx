@@ -13,6 +13,8 @@ import {
   createAlbum,
   deleteAlbum,
   IdType,
+  moveAlbumDown,
+  moveAlbumUp,
   renameAlbum,
 } from "@/redux/librarySlice";
 
@@ -164,6 +166,18 @@ export default function Library() {
     );
   };
 
+  const handleDownButton = (albumId: IdType) => {
+    dispatch(moveAlbumDown({
+      albumId: albumId
+    }));
+  };
+
+  const handleUpButton = (albumId: IdType) => {
+    dispatch(moveAlbumUp({
+      albumId: albumId
+    }));
+  };
+
   return (
     <View className="flex-1 justify-center items-center bg-white">
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-red-500 p-5">
@@ -173,7 +187,15 @@ export default function Library() {
             className="w-full"
             data={albums}
             renderItem={
-              ({ item: album }) => (AlbumCard({ id: album.id, name: album.title, contextCallback: () => contextInvoke(album.id) }))
+              ({ item: album }) => (
+                AlbumCard({
+                  id: album.id,
+                  name: album.title,
+                  downButtonCallback: () => handleDownButton(album.id),
+                  upButtonCallback: () => handleUpButton(album.id),
+                  contextCallback: () => contextInvoke(album.id)
+                })
+              )
             }
             ItemSeparatorComponent={Seperator}
             ListEmptyComponent={NoAlbumFound}

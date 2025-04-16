@@ -16,6 +16,8 @@ import {
   IdType,
   MediaFile,
   MediaTypes,
+  moveFileDown,
+  moveFileUp,
   removeFileFromAlbum,
   renameFile
 } from '@/redux/librarySlice';
@@ -52,7 +54,7 @@ export default function AlbumModal() {
   const [ pickedMediaType, setPickedMediaType ] = useState<MediaTypes>("audio");
   const [ fileName, setFileName ] = useState<string>("");
 
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList<MediaFile>>(null);
 
   useEffect(() => {
     
@@ -237,6 +239,20 @@ export default function AlbumModal() {
     router.push('/');
   };
 
+  const handleDownButton = (albumId: IdType, fileId: IdType) => {
+    dispatch(moveFileDown({
+      albumId,
+      fileId
+    }));
+  };
+
+  const handleUpButton = (albumId: IdType, fileId: IdType) => {
+    dispatch(moveFileUp({
+      albumId,
+      fileId
+    }));
+  };
+
   return (
     <View className='flex-1 justify-center items-center p-2'>
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-blue-500 p-5">
@@ -249,6 +265,8 @@ export default function AlbumModal() {
               id: file.id,
               name: file.name,
               highlight: file.id === highlightId,
+              downButtonCallback: () =>  handleDownButton(album.id, file.id),
+              upButtonCallback: () => handleUpButton(album.id, file.id),
               cardClickCallback: () => mediaPressHandler(file),
               contextCallback: () => contextInvoke(file.id)
             }))
