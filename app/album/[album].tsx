@@ -19,7 +19,8 @@ import {
   moveFileDown,
   moveFileUp,
   removeFileFromAlbum,
-  renameFile
+  renameFile,
+  toggleFileFav
 } from '@/redux/librarySlice';
 import {
   setTrackAsync,
@@ -255,6 +256,13 @@ export default function AlbumModal() {
     }));
   };
 
+  const handleFavButton = (albumId: IdType, fileId: IdType) => {
+    dispatch(toggleFileFav({
+      albumId,
+      fileId
+    }));
+  };
+
   return (
     <View className='flex-1 justify-center items-center p-2'>
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-blue-500 p-5">
@@ -266,8 +274,10 @@ export default function AlbumModal() {
             ({ item: file }) => (FileCard({
               id: file.id,
               name: file.name,
+              favourited: file.favourited,
               highlight: file.id === highlightId,
-              downButtonCallback: () =>  handleDownButton(album.id, file.id),
+              favCallback: () => handleFavButton(album.id, file.id),
+              downButtonCallback: () => handleDownButton(album.id, file.id),
               upButtonCallback: () => handleUpButton(album.id, file.id),
               cardClickCallback: () => mediaPressHandler(file),
               contextCallback: () => contextInvoke(file.id)

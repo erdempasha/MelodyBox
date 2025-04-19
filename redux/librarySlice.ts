@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, nanoid } from "@reduxjs/toolkit";
 
-export type IdType = string; // May change
+export type IdType = string;
 
 export type MediaTypes = 'audio' | 'video';
 
@@ -9,6 +9,8 @@ export interface MediaFile {
   uri: string;
   name: string;
   type: MediaTypes;
+  playCount: number;
+  favourited: boolean;
 }
 
 export interface Album {
@@ -61,6 +63,8 @@ const albumSlice = createSlice({
         uri: action.payload.uri,
         name: action.payload.name,
         type: action.payload.type,
+        playCount: 0,
+        favourited: false,
       }
 
       state.albums = state.albums.map(
@@ -182,6 +186,29 @@ const albumSlice = createSlice({
         }
       );
     },
+    toggleFileFav: (state, action: PayloadAction<{ albumId: IdType, fileId: IdType }>) => {
+      state.albums = state.albums.map(
+        album => {
+          if (album.id === action.payload.albumId) {
+            return {
+              ...album,
+              files: album.files.map(
+                file => {
+                  if (file.id === action.payload.fileId) {
+                    return {
+                      ...file,
+                      favourited: !file.favourited,
+                    };
+                  }
+                  return file;
+                }
+              ),
+            };
+          }
+          return album;
+        }
+      );
+    },
   },
 });
 
@@ -198,6 +225,7 @@ export const {
   moveAlbumUp,
   moveFileDown,
   moveFileUp,
+  toggleFileFav,
 } = albumSlice.actions;
 
 export default albumSlice.reducer;

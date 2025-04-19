@@ -27,8 +27,11 @@ import {
   SearchHeader,
   NoResultsFound
 } from "@/components/libraryComponents"
+import { LinkButton } from "@/components/LinkButton";
+
 import { Button } from "@/components/Button"
 import { libraryScreen } from "@/constants/strings";
+import { router } from "expo-router";
 
 type ContextActions = "rename" | "delete" | "notchosen";
 
@@ -183,25 +186,39 @@ export default function Library() {
       <View className="h-5/6 w-5/6 justify-center items-center rounded-3xl bg-red-500 p-5">
         {
           search === ""?
-          <FlatList
-            className="w-full"
-            data={albums}
-            renderItem={
-              ({ item: album }) => (
-                AlbumCard({
-                  id: album.id,
-                  name: album.title,
-                  downButtonCallback: () => handleDownButton(album.id),
-                  upButtonCallback: () => handleUpButton(album.id),
-                  contextCallback: () => contextInvoke(album.id)
-                })
-              )
-            }
-            ItemSeparatorComponent={Seperator}
-            ListEmptyComponent={NoAlbumFound}
-            ListHeaderComponent={AlbumHeader}
-            keyExtractor={album => album.id}
-          />:
+          <>
+
+            <FlatList
+              className="w-full"
+              data={albums}
+              renderItem={
+                ({ item: album }) => (
+                  AlbumCard({
+                    id: album.id,
+                    name: album.title,
+                    downButtonCallback: () => handleDownButton(album.id),
+                    upButtonCallback: () => handleUpButton(album.id),
+                    contextCallback: () => contextInvoke(album.id)
+                  })
+                )
+              }
+              ItemSeparatorComponent={Seperator}
+              ListEmptyComponent={NoAlbumFound}
+              ListHeaderComponent={
+                <>
+                  <AlbumHeader />
+                  <Button
+                    className='flex-row items-center mb-2 mt-5 justify-center bg-purple-600 rounded-md'
+                    onPress={() => router.push("/favourites")}
+                  >
+                    <FontAwesome className='p-2' name="heart" size={20} color="#F5FFFF" />
+                    <Text className='text-white text-base text-left mr-auto'>{libraryScreen.favs}</Text>
+                  </Button>
+                </>
+              }
+              keyExtractor={album => album.id}
+            />
+          </>:
           <FlatList
             className="w-full"
             data={searchMediaByName(albums, search)}

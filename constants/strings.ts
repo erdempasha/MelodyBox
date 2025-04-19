@@ -31,6 +31,7 @@ export const libraryScreen = {
   contextTitle: "Actions",
   searchPlaceholder: "Search Here",
   areYouSure: "Are you sure?",
+  favs: "Favourites"
 };
 
 export const albumModal = {
@@ -55,4 +56,10 @@ export const settingsScreen = {
   purge: "Purge Data",
   appName: "MelodyBox",
   sampleData: "Load Sample Data",
+};
+
+export const FavModal = {
+  header: "Favourites",
+  NoFavsFound: "You can add songs to your favourites by clicking on the hearts next to them.",
+  goToAlbum: "Go To Album",
 };

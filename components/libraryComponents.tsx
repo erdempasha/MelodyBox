@@ -43,21 +43,21 @@ export function AlbumCard({
       </LinkButton>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-3 items-center justify-center'
         onPress={downButtonCallback}
       >
         <FontAwesome className='p-2' name="angle-down" size={24} color="white" />
       </Button>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-3 items-center justify-center'
         onPress={upButtonCallback}
       >
         <FontAwesome className='p-2' name="angle-up" size={24} color="white" />
       </Button>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-3 items-center justify-center'
         onPress={contextCallback}
       >
         <FontAwesome className='p-2' name="ellipsis-v" size={16} color="white" />

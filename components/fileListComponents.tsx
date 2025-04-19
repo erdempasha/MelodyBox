@@ -11,6 +11,8 @@ type Props = {
   id: string;
   name: string;
   highlight?: boolean;
+  favourited?: boolean;
+  favCallback?: () => void;
   downButtonCallback?: () => void;
   upButtonCallback?: () => void;
   cardClickCallback?: () => void;
@@ -21,6 +23,8 @@ export function FileCard({
   id,
   name,
   highlight,
+  favourited,
+  favCallback,
   downButtonCallback,
   upButtonCallback,
   cardClickCallback,
@@ -36,6 +40,13 @@ export function FileCard({
       }
     >
       <Button
+        className='bg-gray-900 rounded-lg h-fit w-fit m-2 items-center justify-center'
+        onPress={favCallback}
+      >
+        <FontAwesome className='p-2' name="heart" size={20} color={favourited? "#db4040": "#F5FFFF"}  />
+      </Button>
+      
+      <Button
         className='bg-transparent h-fit flex-1 items-center justify-center p-2'
         onPress={cardClickCallback}
       >
@@ -43,21 +54,21 @@ export function FileCard({
       </Button>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-3 items-center justify-center'
         onPress={downButtonCallback}
       >
         <FontAwesome className='p-2' name="angle-down" size={24} color="#111827" />
       </Button>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-3 items-center justify-center'
         onPress={upButtonCallback}
       >
         <FontAwesome className='p-2' name="angle-up" size={24} color="#111827" />
       </Button>
 
       <Button
-        className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
+        className='bg-transparent h-fit w-fit ml-3 items-center justify-center'
         onPress={contextCallback}
       >
         <FontAwesome className='p-2' name="ellipsis-v" size={16} color="#111827" />
