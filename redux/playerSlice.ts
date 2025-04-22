@@ -2,7 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { REHYDRATE } from 'redux-persist';
 import { AVPlaybackStatus, Audio } from 'expo-av';
 import { AppDispatch, RootState } from './store';
-import { IdType, MediaFile, MediaTypes } from "./librarySlice";
+import { IdType, increasePlayCount, MediaFile, MediaTypes } from "./librarySlice";
 
 export interface Track {
   albumId: IdType;
@@ -186,6 +186,10 @@ export const setTrackAsync = createAsyncThunk<
         };
         try {
           await playerService.load(track, { shouldPlay: true }, onStatusUpdate);
+          dispatch(increasePlayCount({
+            albumId: track.albumId,
+            fileId: track.mediaFile.id,
+          }));
         } catch (error: any) {
           dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to load track' }));
           dispatch(stopPlaybackAsync());
@@ -253,13 +257,17 @@ export const seekAsync = createAsyncThunk<
 );
 
 export const replayAsync = createAsyncThunk<
-  void, void, { state: RootState }
+  void, void, { dispatch: AppDispatch; state: RootState }
 >(
   'player/replayAsync',
-  async (_, { getState }) => {
+  async (_, { dispatch, getState }) => {
     const { playbackStatus: { isLoaded }, currentTrack } = getState().player;
     if (!isLoaded || !currentTrack || currentTrack.mediaFile.type !== 'audio') return;
     await playerService.replay();
+    dispatch(increasePlayCount({
+      albumId: currentTrack.albumId,
+      fileId: currentTrack.mediaFile.id
+    }));
   }
 );
 

@@ -31,7 +31,8 @@ export const libraryScreen = {
   contextTitle: "Actions",
   searchPlaceholder: "Search Here",
   areYouSure: "Are you sure?",
-  favs: "Favourites"
+  favs: "Favourites",
+  mostPlayed: "Most Played",
 };
 
 export const albumModal = {
@@ -60,6 +61,12 @@ export const settingsScreen = {
 
 export const FavModal = {
   header: "Favourites",
-  NoFavsFound: "You can add songs to your favourites by clicking on the hearts next to them.",
+  NoFavsFound: "You can add medias to your favourites by clicking on the hearts next to them.",
+  goToAlbum: "Go To Album",
+};
+
+export const MostPlayedModal = {
+  header: "Most Played Medias",
+  NoSongsFound: "Start playing some media then comeback.",
   goToAlbum: "Go To Album",
 };

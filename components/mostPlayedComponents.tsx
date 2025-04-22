@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native';
 
 import { Button } from "@/components/Button"
-import { FavModal } from "@/constants/strings";
+import { MostPlayedModal } from "@/constants/strings";
 
 type Props = {
   albumTitle: string;
@@ -10,7 +10,7 @@ type Props = {
   goToAlbumCallback?: () => void;
 };
 
-export function FavCard({
+export function MostPlayedCard({
   albumTitle,
   fileName,
   cardCallback,
@@ -32,29 +32,29 @@ export function FavCard({
         className='bg-transparent h-fit w-fit ml-5 items-center justify-center'
         onPress={goToAlbumCallback}
       >
-        <Text className='text-white text-left font-semibold mr-auto'>{FavModal.goToAlbum}</Text>
+        <Text className='text-white text-left font-semibold mr-auto'>{MostPlayedModal.goToAlbum}</Text>
       </Button>
     </View>
   );
 }
 
-export function FavHeader() {
+export function MostPlayedHeader() {
   return (
     <View className='h-fit w-full items-center justify-center'>
-      <Text className='text-white text-xl font-bold opacity-85'>{FavModal.header}</Text>
+      <Text className='text-white text-xl font-bold opacity-85'>{MostPlayedModal.header}</Text>
     </View>
   );
 }
 
-export function NoFavsFound() {
+export function NoMostPlayedFound() {
   return (
     <View className='h-full w-full items-center justify-center'>
-      <Text className='text-white'>{FavModal.NoFavsFound}</Text>
+      <Text className='text-white'>{MostPlayedModal.NoSongsFound}</Text>
     </View>
   );
 }
 
-export function FavSeperator() {
+export function MostPLayedSeperator() {
   return (
     <View className='flex-row justify-center items-center'>
       <View className='flex-1 h-1 rounded bg-white' />

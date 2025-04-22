@@ -187,7 +187,6 @@ export default function Library() {
         {
           search === ""?
           <>
-
             <FlatList
               className="w-full"
               data={albums}
@@ -213,6 +212,13 @@ export default function Library() {
                   >
                     <FontAwesome className='p-2' name="heart" size={20} color="#F5FFFF" />
                     <Text className='text-white text-base text-left mr-auto'>{libraryScreen.favs}</Text>
+                  </Button>
+                  <Button
+                    className='flex-row items-center mb-2 justify-center bg-purple-600 rounded-md'
+                    onPress={() => router.push("/mostplayed")}
+                  >
+                    <FontAwesome className='p-2' name="repeat" size={20} color="#F5FFFF" />
+                    <Text className='text-white text-base text-left mr-auto'>{libraryScreen.mostPlayed}</Text>
                   </Button>
                 </>
               }

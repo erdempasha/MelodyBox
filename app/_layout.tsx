@@ -52,6 +52,12 @@ export default function RootLayout() {
               presentation: "modal",
             }}
           />
+          <Stack.Screen
+            name="mostplayed"
+            options={{
+              presentation: "modal",
+            }}
+          />
           <Stack.Screen name="+not-found" />
         </Stack>
       </PersistGate>

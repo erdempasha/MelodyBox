@@ -209,6 +209,29 @@ const albumSlice = createSlice({
         }
       );
     },
+    increasePlayCount: (state, action: PayloadAction<{ albumId: IdType, fileId: IdType }>) => {
+      state.albums = state.albums.map(
+        album => {
+          if (album.id === action.payload.albumId) {
+            return {
+              ...album,
+              files: album.files.map(
+                file => {
+                  if (file.id === action.payload.fileId) {
+                    return {
+                      ...file,
+                      playCount: file.playCount + 1,
+                    };
+                  }
+                  return file;
+                }
+              ),
+            };
+          }
+          return album;
+        }
+      );
+    },
   },
 });
 
@@ -226,6 +249,7 @@ export const {
   moveFileDown,
   moveFileUp,
   toggleFileFav,
+  increasePlayCount,
 } = albumSlice.actions;
 
 export default albumSlice.reducer;
