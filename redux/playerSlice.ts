@@ -186,10 +186,7 @@ export const setTrackAsync = createAsyncThunk<
         };
         try {
           await playerService.load(track, { shouldPlay: true }, onStatusUpdate);
-          dispatch(increasePlayCount({
-            albumId: track.albumId,
-            fileId: track.mediaFile.id,
-          }));
+          
         } catch (error: any) {
           dispatch(playerSlice.actions._updatePlaybackStatusInternal({ isLoaded: false, error: error?.message || 'Failed to load track' }));
           dispatch(stopPlaybackAsync());
@@ -198,6 +195,11 @@ export const setTrackAsync = createAsyncThunk<
         dispatch(playerSlice.actions._syncStatusForVideoLoad());
         console.log("Set track for VIDEO. UI component should handle loading.");
     }
+
+    dispatch(increasePlayCount({
+      albumId: track.albumId,
+      fileId: track.mediaFile.id,
+    }));
   }
 );
 
@@ -262,12 +264,16 @@ export const replayAsync = createAsyncThunk<
   'player/replayAsync',
   async (_, { dispatch, getState }) => {
     const { playbackStatus: { isLoaded }, currentTrack } = getState().player;
+
+    if (isLoaded && currentTrack !== undefined) {
+      dispatch(increasePlayCount({
+        albumId: currentTrack.albumId,
+        fileId: currentTrack.mediaFile.id
+      }));
+    }
+    
     if (!isLoaded || !currentTrack || currentTrack.mediaFile.type !== 'audio') return;
     await playerService.replay();
-    dispatch(increasePlayCount({
-      albumId: currentTrack.albumId,
-      fileId: currentTrack.mediaFile.id
-    }));
   }
 );
 
