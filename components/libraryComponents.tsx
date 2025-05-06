@@ -84,7 +84,7 @@ export function AlbumHeader() {
 
 export function NoAlbumFound() {
   return (
-    <View className='h-full w-full items-center justify-center'>
+    <View className='h-fit w-full items-center justify-center'>
       <Text className='text-white'>{libraryScreen.noAlbumFound}</Text>
     </View>
   );
