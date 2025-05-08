@@ -10,6 +10,7 @@ import {
   MediaFile,
 } from '@/redux/librarySlice';
 import {
+  addToQueue,
   setTrackAsync,
 } from '@/redux/playerSlice';
 
@@ -59,6 +60,16 @@ export default function MostPlayedModal() {
     router.push('/');
   };
 
+  const handleQueue = (
+    albumId: IdType,
+    file: MediaFile
+  ) => {
+    dispatch(addToQueue({
+      albumId: albumId,
+      mediaFile: file
+    }))
+  }; 
+
   const handleToAlbum = (
     albumId: IdType,
     fileId: IdType
@@ -81,6 +92,7 @@ export default function MostPlayedModal() {
               albumTitle: item.albumTitle,
               fileName: item.file.name,
               cardCallback: () => handleCardClick(item.albumId, item.file),
+              queueCallback: () => handleQueue(item.albumId, item.file),
               goToAlbumCallback: () => handleToAlbum(item.albumId, item.file.id), 
             }))
           }

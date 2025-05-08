@@ -7,6 +7,7 @@ type Props = {
   albumTitle: string;
   fileName: string;
   cardCallback?: () => void;
+  queueCallback?: () => void;
   goToAlbumCallback?: () => void;
 };
 
@@ -14,6 +15,7 @@ export function MostPlayedCard({
   albumTitle,
   fileName,
   cardCallback,
+  queueCallback,
   goToAlbumCallback,
 }: Props) {
 
@@ -26,6 +28,13 @@ export function MostPlayedCard({
         onPress={cardCallback}
       >
         <Text className='text-white text-left mr-auto'>{albumTitle}: {fileName}</Text>
+      </Button>
+
+      <Button
+        className='bg-transparent h-fit w-fit ml-5 py-1 px-2 rounded-md items-center justify-center active:bg-purple-800/55'
+        onPress={queueCallback}
+      >
+        <Text className='text-white text-left font-semibold mr-auto'>{MostPlayedModal.queue}</Text>
       </Button>
 
       <Button

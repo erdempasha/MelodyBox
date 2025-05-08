@@ -62,11 +62,13 @@ export const settingsScreen = {
 export const FavModal = {
   header: "Favourites",
   NoFavsFound: "You can add medias to your favourites by clicking on the hearts next to them.",
+  queue: "Queue",
   goToAlbum: "Go To Album",
 };
 
 export const MostPlayedModal = {
   header: "Most Played Medias",
   NoSongsFound: "Start playing some media then comeback.",
+  queue: "Queue",
   goToAlbum: "Go To Album",
 };
